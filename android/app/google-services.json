@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "972960795720",
+    "project_id": "movieexplorer-57075",
+    "storage_bucket": "movieexplorer-57075.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:972960795720:android:1924282c895ec4f00e1c7d",
+        "android_client_info": {
+          "package_name": "com.explorer_movie"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuKBtWTZG1N6DtWP6w5z0EIpsELIcrtbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

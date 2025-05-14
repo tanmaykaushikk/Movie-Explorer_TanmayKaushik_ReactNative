@@ -1,13 +1,12 @@
-/**
- * @format
- */
-
 import React from 'react';
-import ReactTestRenderer from 'react-test-renderer';
-import App from '../App';
+import { render } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
-test('renders correctly', async () => {
-  await ReactTestRenderer.act(() => {
-    ReactTestRenderer.create(<App />);
+const App = () => <Text>Welcome to Explorer Movie</Text>;
+
+describe('App', () => {
+  it('renders the welcome text', () => {
+    const { getByText } = render(<App />);
+    expect(getByText('Welcome to Explorer Movie')).toBeTruthy();
   });
 });

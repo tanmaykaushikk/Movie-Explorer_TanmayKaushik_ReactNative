@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TrendingMoviesCarousel Component handles empty data gracefully 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "color": "white",
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "marginBottom": 10,
+      }
+    }
+  >
+    Trending
+  </Text>
+  <View />
+</View>
+`;
