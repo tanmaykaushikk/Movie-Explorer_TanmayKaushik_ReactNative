@@ -7,52 +7,62 @@ import {
   TouchableOpacity,
   ImageBackground
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSubscription } from "../utils/Api";
 
-
 const { width, height } = Dimensions.get("window");
 
-const wp = (percent:number) => (width * percent) / 100;
-const hp = (percent:number) => (height * percent) / 100;
+const wp = (percent: number) => (width * percent) / 100;
+const hp = (percent: number) => (height * percent) / 100;
 
 interface PlanOptionProps {
   title: string;
   price: string;
   features: string[];
   isPopular: boolean;
+  currentPlan: string | null; 
 }
 
-const PlanOption = ({ title, price, features, isPopular }:PlanOptionProps) => {
+const PlanOption = ({ title, price, features, isPopular, currentPlan }: PlanOptionProps) => {
+  const navigation = useNavigation();
+  const isCurrentPlan = currentPlan?.toLowerCase() === title.toLowerCase(); 
 
-  const navigation = useNavigation()
+  const handlePayment = async (title: string) => {
+    try{
+      const token = await AsyncStorage.getItem('token');
+      const res = await createSubscription(title, token);
 
-
-  const handlePayment = async(title: string)=>{
-    const token = await AsyncStorage.getItem('token')
-    console.log(token)
-    const res = await createSubscription(title ,token);
-
-    // console.log('urll' , res.url)
-    const url = res.url
-    const session = res.session_id
-    navigation.navigate("Payment", {url:url, session: session});
+    if(res?.url && res?.session_id){
+      await AsyncStorage.setItem("subscription",title);
+      navigation.navigate("Payment", {
+         url: res.url,
+        session: res.session_id
+      });
+    }
+    else{
+      console.warn("Invalid response from server" , res);
+    }
   }
+    catch(error){
+      console.error("error in handle payment",error);
+    }
+  };
+
   return (
-    <View style={styles.planContainer}  testID={`plan-${title}`}>
+    <View style={styles.planContainer} testID={`plan-${title}`}>
       {isPopular && (
         <View style={styles.popularBadge} testID="popularBadge">
           <Text style={styles.popularText}>MOST POPULAR</Text>
         </View>
       )}
-      
+
       <LinearGradient
         colors={isPopular ? ['#333', '#222', '#111'] : ['#222', '#1a1a1a', '#0d0d0d']}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 1}}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[styles.planBox, isPopular && styles.popularPlan]}
       >
         <View style={styles.planHeader}>
@@ -63,7 +73,7 @@ const PlanOption = ({ title, price, features, isPopular }:PlanOptionProps) => {
             <Text style={styles.perMonth}>/month</Text>
           </View>
         </View>
-        
+
         <View style={styles.featuresContainer}>
           {features.map((feature, index) => (
             <View key={index} style={styles.featureRow}>
@@ -72,23 +82,43 @@ const PlanOption = ({ title, price, features, isPopular }:PlanOptionProps) => {
             </View>
           ))}
         </View>
-        
-        <TouchableOpacity style={[styles.subscribeButton, isPopular && styles.popularButton]} onPress={()=> handlePayment(title)} testID={`subscribe-${title}`}>
-          <Text style={styles.buttonText}>Subscribe Now</Text>
-        </TouchableOpacity>
+
+        {isCurrentPlan ? (
+          <Text style={{ color: '#ccc', textAlign: 'center', marginTop: 10 }}>
+            You already have this plan
+          </Text>
+        ) : (
+          <TouchableOpacity
+            style={[styles.subscribeButton, isPopular && styles.popularButton]}
+            onPress={() => handlePayment(title)}
+            testID={`subscribe-${title}`}
+          >
+            <Text style={styles.buttonText}>Subscribe Now</Text>
+          </TouchableOpacity>
+        )}
       </LinearGradient>
     </View>
   );
 };
 
 const PremiumScreen = () => {
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null); 
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      const plan = await AsyncStorage.getItem("subscription"); 
+      setCurrentPlan(plan);
+    };
+    fetchSubscription();
+  }, []);
+
   const basicFeatures = [
     "Basic Features Access",
     "Standard Quality",
     "Ad-free Experience",
     "Single Device Support"
   ];
-  
+
   const premiumFeatures = [
     "All Basic Features",
     "Premium Quality",
@@ -98,14 +128,14 @@ const PremiumScreen = () => {
   ];
 
   return (
-    <ImageBackground 
-      style={styles.container} 
+    <ImageBackground
+      style={styles.container}
       source={require("../assets/Images/loginbackground.jpg")}
     >
       <LinearGradient
         colors={["#333333", "#222222", "#111111", "#000000"]}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 1}}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
         <View style={styles.headerContainer} testID="headerContainer">
@@ -113,22 +143,32 @@ const PremiumScreen = () => {
           <Text style={styles.headerText} testID="headerText">Upgrade Your Experience</Text>
           <Text style={styles.subHeaderText} testID="subHeaderText">No commitment. Cancel anytime.</Text>
         </View>
-        
+
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <PlanOption 
-            title="1_day" 
-            price="9.99" 
-            features={basicFeatures} 
-            isPopular={false} 
+          <PlanOption
+            title="1_day"
+            price="9.99"
+            features={basicFeatures}
+            isPopular={false}
+            currentPlan={currentPlan} 
           />
 
-          <PlanOption 
-            title="7-days Subscription" 
-            price="19.99" 
+          <PlanOption
+            title="7_days"
+            price="19.99"
             features={premiumFeatures}
-            isPopular={true} 
+            isPopular={true}
+            currentPlan={currentPlan} 
           />
-          
+
+          <PlanOption
+            title="1_month"
+            price="19.99"
+            features={premiumFeatures}
+            isPopular={true}
+            currentPlan={currentPlan} 
+          />
+
           <View style={styles.guaranteeContainer}>
             <Text style={styles.guaranteeText} testID="moneyBackGuarantee">✓ 30-day money back guarantee</Text>
           </View>
@@ -140,7 +180,8 @@ const PremiumScreen = () => {
 
 export default PremiumScreen;
 
-const styles = StyleSheet.create({
+
+ const styles = StyleSheet.create({
   container: {
     flex: 1,
     resizeMode: "cover",
@@ -315,3 +356,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+
+
+
+

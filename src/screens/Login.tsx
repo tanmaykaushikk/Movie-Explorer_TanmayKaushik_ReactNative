@@ -11,10 +11,12 @@ import {
   import React, { useState } from "react";
   import LinearGradient from 'react-native-linear-gradient';
   import { useNavigation } from "@react-navigation/native";
-  import { loginAPI } from "../utils/Api";
+  import { getSubscripstionStatus, loginAPI } from "../utils/Api";
   import { NativeStackNavigationProp } from "@react-navigation/native-stack";
   import { RootStackParamList } from "../types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
   const { height, width } = Dimensions.get("window");
+
 
   
   const wp = (percent: number) => (width * percent) / 100;
@@ -50,14 +52,29 @@ type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList>;
   
       try {
         const user = await loginAPI({ email, password });
+
+        const token = user?.token;
+        if(!token) throw new Error("Token not found in the login response");
+
+        const subcriptionStatus = await getSubscripstionStatus(token);
+        console.log("user subscription" , subcriptionStatus);
+
+        const userToStore = {
+          ...user,
+          premiumSubscribed: subcriptionStatus.plan_type === "premium",
+        };
+
+        await AsyncStorage.setItem("user",JSON.stringify(userToStore));
         
         if (user?.role === "supervisor") {
           Alert.alert("Admin login successful");
-          navigation.navigate("HomePage");
-        } else {
-          Alert.alert("Login successful");
-          navigation.navigate("HomePage");
+        } else if(subcriptionStatus.plan_type === "premium"){
+          Alert.alert("Login successful - premium user");
+        } else{
+          Alert.alert("Login successful - Free user");
         }
+        navigation.navigate("HomePage")
+
       } catch (error) {
         Alert.alert("Invalid email or password");
         console.error("Login Error:", error);

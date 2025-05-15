@@ -220,8 +220,7 @@ const handleMovieClick = async (item: Movie) => {
                 title={`Search Results for "${searchText}"`}
                 isAdmin={isAdmin}
                 data={searchResults}
-                handleClick={handleMovieClick}
-              />
+                handleClick={handleMovieClick} isPremiumSubscribed={false}              />
             ) : (
               <>
                 {/*Trending Movies Carousel */}

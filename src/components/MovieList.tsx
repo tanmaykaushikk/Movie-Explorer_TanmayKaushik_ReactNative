@@ -116,7 +116,6 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
               }
             }}
             onLongPress={() => isAdmin && handleDelete(item.id)}
-            disabled={item.premium && !isPremiumSubscribed && !isAdmin}
               testID={`movie-touchable-${item.id}`}
           >
             <View style={styles.movieImageContainer}>

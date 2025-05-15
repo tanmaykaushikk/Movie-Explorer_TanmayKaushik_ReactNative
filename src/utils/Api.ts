@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { Alert } from "react-native";
 // const BASE_URL = "https://movie-explorer-ror-aalekh-2ewg.onrender.com";
 const BASE_URL = 'https://movie-explorer-ror-agrim.onrender.com';
@@ -439,54 +439,47 @@ export const GetSubscriptionStatus = async (session_id : string) => {
 
 
 
+interface SubscriptionStatus {
+  plan_type: 'premium' | 'none';
+  created_at?: string;
+  expires_at?: string;
+}
 
+interface ApiError {
+  error: string;
+}
 
+export const getSubscripstionStatus = async (token: string): Promise<SubscriptionStatus> => {
+  try {
+    if (!token) {
+      Error('You need to sign in first.');
+      throw new Error('No authentication token found');
+    }
 
+    const response: AxiosResponse<{ subscription: SubscriptionStatus } | ApiError> = await axios.get(
+      `${BASE_URL}/api/v1/subscriptions/status`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
+    if ('error' in response.data) {
+      throw new Error(response.data.error);
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// export const getSubscriptionStatus = async (token: string): Promise<SubscriptionStatus> => {
-//     try {
-//       if (!token) {
-//         toast.error('You need to sign in first.');
-//         throw new Error('No authentication token found');
-//       }
-  
-//       const response: AxiosResponse<SubscriptionStatus | ApiError> = await axios.get(
-//         `${BASE_URL}/api/v1/subscriptions/status`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-  
-//       if ('error' in response.data) {
-//         throw new Error(response.data.error);
-//       }
-//       console.log('Subscription Status:', response.data.subscription.plan_type);
-//       return  response.data.subscription.plan_type;
-//     } catch (error) {
-//       console.error('Subscription Status Error:', {
-//         message: error instanceof Error ? error.message : 'Unknown error',
-//         response: axios.isAxiosError(error) ? error.response?.data : undefined,
-//         status: axios.isAxiosError(error) ? error.response?.status : undefined,
-//       });
-//       if (axios.isAxiosError(error)) {
-//         throw new Error(error.response?.data?.error || 'Failed to fetch subscription status');
-//       }
-//       throw new Error('An unexpected error occurred');
-//     }
-//   };
+    console.log('Subscription Status:', response.data.subscription);
+    return response.data.subscription;
+  } catch (error) {
+    console.error('Subscription Status Error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      response: axios.isAxiosError(error) ? error.response?.data : undefined,
+      status: axios.isAxiosError(error) ? error.response?.status : undefined,
+    });
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.error || 'Failed to fetch subscription status');
+    }
+    throw new Error('An unexpected error occurred');
+  }
+};

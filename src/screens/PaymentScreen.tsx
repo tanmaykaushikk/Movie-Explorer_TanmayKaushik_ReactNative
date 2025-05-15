@@ -59,14 +59,6 @@ const Payment = () => {
     }
   };
 
-  //    else if (hasReachedSuccessUrl && !finalRedirectUrl) {
-  //     setFinalRedirectUrl(currentUrl);
-  //     console.log('Final redirected URL after success:', currentUrl);
-      
-  //     navigation.replace('Homepage'); 
-  //   }
-  // };
-
   return (
     <SafeAreaView style={{ flex: 1 }} testID="payment-screen">
       <WebView

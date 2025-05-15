@@ -32,6 +32,7 @@ interface TrendingMoviesCarouselProps {
   isAdmin: boolean;
   data: MovieItem[];
   handleClick: (item: MovieItem) => void;
+  isPremiumSubscribed: boolean;
 }
 
 interface MovieCardProps {
@@ -43,12 +44,9 @@ interface MovieCardProps {
 const { width, height } = Dimensions.get("window");
 
 const TrendingMoviesCarousel: React.FC<TrendingMoviesCarouselProps> = ({
-  data, isAdmin, handleClick
+  data, isAdmin, handleClick,isPremiumSubscribed
 }) => {
   console.log("dataaaaaaaaaaaaaaaaaaaaaaaaaaaa", data)
-  // const handleClick = (item:any) => {
-  //     navigation.navigate("Movie" as never, { movie:item } as never);
-  // };
 
   return (
     <View style={styles.container}>
@@ -63,7 +61,6 @@ const TrendingMoviesCarousel: React.FC<TrendingMoviesCarouselProps> = ({
           <MovieCard item={item} handleClick={handleClick} isAdmin={isAdmin} />
         )}
         style={{ justifyContent: "center", alignSelf: "center" }}
-        // slideStyle={{ display: "flex", alignItems: "center" }}
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,

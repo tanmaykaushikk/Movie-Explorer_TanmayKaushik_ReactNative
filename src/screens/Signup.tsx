@@ -30,10 +30,6 @@ import {
     const [phoneNumber, setPhoneNumber] = React.useState<string>("");
     const [errors,setErrors] = useState<any>({});
   
-    const dummyUser = {
-      email: "test@gmail.com",
-      password: "test@123",
-    };
   
     const handleSignup =  async() => {
       let formErrors:any = {};
