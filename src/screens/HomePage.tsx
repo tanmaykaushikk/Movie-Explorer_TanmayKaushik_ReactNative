@@ -254,7 +254,7 @@ const handleMovieClick = async (item: Movie) => {
                 <MovieList
                   isAdmin={isAdmin}
                   title="For You"
-                  data={forYou}
+                  data={trending}
                   handleClick={handleMovieClick} 
                   isPremiumSubscribed={isPremiumSubscribed}/>
 
