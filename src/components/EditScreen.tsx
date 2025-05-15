@@ -74,7 +74,7 @@ const EditScreen = () => {
         const file = {
           uri: fileUri,
           name: fileName,
-          type: `image/${fileType}`,
+          type: image.type || "image/jpeg",
         };
 
         setForm((prev) => ({
@@ -97,13 +97,20 @@ const EditScreen = () => {
       "main_lead",
       "streaming_platform",
       "rating",
+      "posterFile",
+
     ];
 
-    const missingFields = requiredFields.filter((key) => !form[key].trim());
+const missingFields = requiredFields.filter((key) => {
+      if (key === "posterFile") {
+        return !form.posterFile; 
+      }
+      return !form[key].trim();
+    });
 
     if (missingFields.length > 0) {
       setInvalidFields(new Set(missingFields));
-      Alert.alert("Validation Error", "Please fill all required fields."); // 🔴 Show error
+      Alert.alert("Validation Error", "Please fill all required fields.");
       return;
     }
 
@@ -189,7 +196,7 @@ const EditScreen = () => {
             );
           })}
 
-          <TouchableOpacity onPress={pickImage} style={styles.imagePicker} testID="image-picker-button">
+          <TouchableOpacity onPress={pickImage}  style={[styles.imagePicker, invalidFields.has("posterFile") && styles.invalidInput]} testID="image-picker-button">
             <Text style={styles.imagePickerText}>Pick Poster Image</Text>
             {form.posterPreview ? (
               <Image

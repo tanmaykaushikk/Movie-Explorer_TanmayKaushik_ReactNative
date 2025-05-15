@@ -57,7 +57,7 @@ const Profile = () => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      loadUserData(); // Refresh user data on focus
+      loadUserData(); 
     });
     return unsubscribe;
   }, [navigation]);
@@ -89,7 +89,6 @@ const Profile = () => {
             <View style={styles.header}>
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <Image
-                  // source={require('../assets/Images/back.png')} // Add back icon
                   style={styles.backIcon}
                   resizeMode="contain"
                 />

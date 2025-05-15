@@ -6,6 +6,7 @@ import {
     Dimensions,
     TextInput,
     TouchableOpacity,
+    Alert,
   } from "react-native";
   import React, { useState } from "react";
   import LinearGradient from 'react-native-linear-gradient';
@@ -54,13 +55,13 @@ import {
           password,
           mobile_number:phoneNumber,
         });
-        alert("User created successfully!");
+        Alert.alert("User created successfully!");
        navigation.navigate("LoginPage");
       }catch(error:any){
         if (error.message.includes("Email")) {
           setErrors({ email: error.message });
         } else {
-          alert(error.message || "Signup failed");
+          Alert.alert(error.message || "Signup failed");
         }
       }
     };
@@ -210,7 +211,3 @@ import {
     },
   });
 
-function alert(arg0: string) {
-    throw new Error("Function not implemented.");
-}
-  

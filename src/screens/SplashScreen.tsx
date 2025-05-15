@@ -28,6 +28,7 @@ import {
         try{
           await AsyncStorage.removeItem("user");
           await AsyncStorage.removeItem("token");
+          await AsyncStorage.setItem("role","guest");
         }
         catch(error){
           console.log("failed to clear the storage",error);

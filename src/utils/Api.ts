@@ -5,6 +5,8 @@ import { Alert } from "react-native";
 const BASE_URL = 'https://movie-explorer-ror-agrim.onrender.com';
 
 interface UserResponse {
+  name: any;
+  phone: any;
   id: number;
   email: string;
   role: string;
@@ -118,8 +120,8 @@ interface Movie {
   premium: boolean;
   main_lead: string;
   streaming_platform: string;
-  poster_url: string;
-  banner_url: string;
+  poster_url ?: string;
+  banner_url ?: string;
 }
 
 export const getAllMovies = async () => {
@@ -200,6 +202,7 @@ export const searchMovies = async (title: string): Promise<Movie[]> => {
 
 
 interface MovieFormData {
+  poster: any;
   title: string;
   genre: string;
   release_year: string;
@@ -209,9 +212,9 @@ interface MovieFormData {
   main_lead: string;
   streaming_platform: string;
   rating: string;
-  poster_url: File ;
-  banner_url: File ;
   isPremium: boolean;
+  poster_url ?:  { uri: string; name: string; type: string } | null;
+  banner_url ?:  { uri: string; name: string; type: string } | null;
 }
 
 
@@ -235,11 +238,12 @@ export const createMovie = async (formData: MovieFormData): Promise<Movie | null
     movieFormData.append("movie[streaming_platform]", formData.streaming_platform);
     movieFormData.append("movie[rating]", formData.rating);
     movieFormData.append("movie[premium]", String(formData.isPremium));
-    if (formData.poster_url) {
-      movieFormData.append("movie[poster]", formData.poster_url);
-    }
-    if (formData.banner_url) {
-      movieFormData.append("movie[banner]", formData.banner_url);
+      if (formData.poster) {
+      movieFormData.append("movie[poster]", {
+        uri: formData.poster.uri,
+        name: formData.poster.name,
+        type: formData.poster.type,
+      } as any);
     }
 
     const response = await axios.post(`${BASE_URL}/api/v1/movies`, movieFormData, {

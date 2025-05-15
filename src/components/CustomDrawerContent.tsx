@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image } from 'react-native';
 import { DrawerContentComponentProps, DrawerContentScrollView } from '@react-navigation/drawer';
 import { LinearGradient } from 'react-native-linear-gradient';
-
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width, height } = Dimensions.get('window');
 
 const wp = (percent:number) => (width * percent) / 100;
@@ -10,13 +11,31 @@ const hp = (percent:number) => (height * percent) / 100;
 
 const CustomDrawerContent :React.FC<DrawerContentComponentProps>= (props) => {
   const { navigation } = props;
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+    useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user');
+        setIsLoggedIn(!!userData); // if user data exists, user is logged in
+      } catch (err) {
+        console.log('Error checking login status', err);
+      }
+    };
+
+    const unsubscribe = props.navigation.addListener('focus', checkLogin);
+    checkLogin();
+
+    return unsubscribe;
+  }, [props.navigation]);
+
   
   const menuItems = [
-    { name: 'Login', route: 'LoginPage', icon: '🔑' },
-    { name: 'Sign Up', route: 'SignupPage', icon: '✨' },
+     !isLoggedIn && { name: 'Login', route: 'LoginPage', icon: '🔑' },
+     !isLoggedIn && { name: 'Sign Up', route: 'SignupPage', icon: '✨' },
     { name: 'Premium', route: 'Premium', icon: '⭐' },
     { name: 'Profile', route: 'Profile', icon: '👤' },
-  ];
+  ].filter(Boolean);
 
   return (
     <LinearGradient

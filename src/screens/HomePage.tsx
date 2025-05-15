@@ -64,6 +64,8 @@ const HomePage = () => {
   const [genreMovies, setGenreMovies] = useState<Record<string, Movie[]>>({});
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
+  const [isGuest, setIsGuest] = useState(false);
+
 
   const genres = ["action", "comedy", "horror", "romance", "sci-fi"];
 
@@ -78,12 +80,14 @@ const HomePage = () => {
         } else {
           setIsAdmin(false);
           setIsPremiumSubscribed(false);
+          setIsGuest(true);
 
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
         setIsAdmin(false);
         setIsPremiumSubscribed(false);
+        setIsGuest(true);
       } finally {
         const allMovies: any = await getAllMovies();
         if (allMovies && Array.isArray(allMovies.movies)) {
@@ -125,8 +129,22 @@ const HomePage = () => {
       setSearchResults([]);
     }
   };
-const handleMovieClick = async (item: Movie) => {
+  const handleMovieClick = async (item: Movie) => {
     try {
+      if (isGuest) {
+        Alert.alert(
+          "Login Required",
+          "Please login to view this movie.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Login",
+              onPress: () => navigation.navigate("Login"),
+            },
+          ]
+        );
+        return;
+      }
       if (item.premium && !isPremiumSubscribed && !isAdmin) {
         Alert.alert(
           "Premium Content",
@@ -200,7 +218,21 @@ const handleMovieClick = async (item: Movie) => {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                onPress={() => navigation.navigate("Premium")}
+                onPress={() => {
+                  if (isGuest) {
+                    Alert.alert(
+                      "Login Required",
+                      "Please login to manage subscriptions.",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Login", onPress: () => navigation.navigate("Login") },
+                      ]
+                    );
+                    return;
+                  }
+                  navigation.navigate("Premium");
+                }}
+
               >
                 <Image
                   source={require("../assets/Images/icons8-subscription-64.png")}
@@ -220,7 +252,7 @@ const handleMovieClick = async (item: Movie) => {
                 title={`Search Results for "${searchText}"`}
                 isAdmin={isAdmin}
                 data={searchResults}
-                handleClick={handleMovieClick} isPremiumSubscribed={false}              />
+                handleClick={handleMovieClick} isPremiumSubscribed={false} />
             ) : (
               <>
                 {/*Trending Movies Carousel */}
@@ -254,8 +286,8 @@ const handleMovieClick = async (item: Movie) => {
                   isAdmin={isAdmin}
                   title="For You"
                   data={trending}
-                  handleClick={handleMovieClick} 
-                  isPremiumSubscribed={isPremiumSubscribed}/>
+                  handleClick={handleMovieClick}
+                  isPremiumSubscribed={isPremiumSubscribed} />
 
                 {/* Genre-based lists */}
                 {Object.entries(genreMovies).map(([genre, movies]) => (
