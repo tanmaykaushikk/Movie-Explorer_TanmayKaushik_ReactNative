@@ -52,6 +52,7 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
         renderItem={({ item }) => (
           <TouchableWithoutFeedback
             onPress={() => navigation.navigate("Movie", { movie: item })}
+            testID="movies-list"
           >
             <View style={styles.movieCard}>
               <Image source={{ uri: item.poster_url }} style={styles.movieImage} />
@@ -70,11 +71,12 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
             styles.paginationButton,
             currentPage === 1 && styles.disabledButton,
           ]}
+           testID="previous-button"
         >
           <Text style={styles.buttonText}>‹ Prev</Text>
         </TouchableOpacity>
 
-        <Text style={styles.pageNumber}>{`${currentPage} / ${totalPages}`}</Text>
+        <Text   testID="page-number" style={styles.pageNumber}>{`${currentPage} / ${totalPages}`}</Text>
 
         <TouchableOpacity
           onPress={handleNextPage}
@@ -83,6 +85,7 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
             styles.paginationButton,
             currentPage === totalPages && styles.disabledButton,
           ]}
+            testID="next-button"
         >
           <Text style={styles.buttonText}>Next ›</Text>
         </TouchableOpacity>

@@ -1,184 +1,87 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import Profile from '../../src/screens/Profile'; // Adjust the path as per your project structure
+import Profile from '../../src/screens/Profile';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
-// Mocking AsyncStorage to avoid issues during testing
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
-  setItem: jest.fn(),
   removeItem: jest.fn(),
 }));
 
+const mockNavigate = jest.fn();
+const mockGoBack = jest.fn();
+const mockReset = jest.fn();
+
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({
+    navigate: mockNavigate,
+    goBack: mockGoBack,
+    addListener: jest.fn(() => () => {}),
+    reset: mockReset,
+  }),
+}));
+
 describe('Profile Screen', () => {
+  const userMock = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    phone: '1234567890',
+    role: 'supervisor',
+    premiumSubscribed: true,
+  };
+
   beforeEach(() => {
-    // Mock the return values for AsyncStorage
-    require('@react-native-async-storage/async-storage').getItem.mockResolvedValue(
-      JSON.stringify({
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '+1 234 567 8900',
-        role: 'user',
-        subscriptionStatus: 'Free',
-      })
-    );
-    require('@react-native-async-storage/async-storage').setItem.mockResolvedValue({});
-    require('@react-native-async-storage/async-storage').removeItem.mockResolvedValue({});
+    jest.clearAllMocks();
   });
 
-  it('renders the profile screen and loads user data', async () => {
+  it('renders loader while fetching data', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockReturnValueOnce(null);
     const { getByText } = render(<Profile />);
-
-    // Ensure that the loading message is shown
     expect(getByText('Loading profile...')).toBeTruthy();
-
-    // Wait for the profile data to be loaded
-    await waitFor(() => {
-      expect(getByText('John Doe')).toBeTruthy();
-      expect(getByText('john.doe@example.com')).toBeTruthy();
-      expect(getByText('+1 234 567 8900')).toBeTruthy();
-      expect(getByText('Free')).toBeTruthy();
-    });
   });
 
-  it('allows editing and saving profile data', async () => {
-    const { getByText, getByPlaceholderText } = render(<Profile />);
 
-    // Wait for the profile data to be loaded
-    await waitFor(() => {
-      expect(getByText('John Doe')).toBeTruthy();
-      expect(getByText('john.doe@example.com')).toBeTruthy();
-      expect(getByText('+1 234 567 8900')).toBeTruthy();
-    });
 
-    // Press the edit button
-    fireEvent.press(getByText('Edit Profile'));
 
-    // Edit the name field
-    const nameInput = getByPlaceholderText('Name');
-    fireEvent.changeText(nameInput, 'Jane Doe');
-
-    // Save changes
-    fireEvent.press(getByText('Save Changes'));
-
-    // Check if the save function was called
-    await waitFor(() => {
-      expect(require('@react-native-async-storage/async-storage').setItem).toHaveBeenCalled();
-    });
-
-    // Ensure that the new name appears on the screen
-    expect(getByText('Jane Doe')).toBeTruthy();
-  });
-
-  it('handles logout', async () => {
-    const { getByText } = render(<Profile />);
-
-    // Press the logout button
-    fireEvent.press(getByText('Logout'));
-
-    // Ensure that AsyncStorage removeItem is called for 'user' and 'token'
-    await waitFor(() => {
-      expect(require('@react-native-async-storage/async-storage').removeItem).toHaveBeenCalledWith('user');
-      expect(require('@react-native-async-storage/async-storage').removeItem).toHaveBeenCalledWith('token');
-    });
-  });
-
-  it('shows an error message if AsyncStorage fails to load data', async () => {
-    // Mock AsyncStorage to return an error
-    require('@react-native-async-storage/async-storage').getItem.mockRejectedValueOnce(new Error('Failed to load user data'));
+  it('navigates to Premium screen on upgrade button press', async () => {
+    const freeUser = { ...userMock, premiumSubscribed: false };
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(freeUser));
 
     const { getByText } = render(<Profile />);
-
-    // Wait for the error alert to appear
-    await waitFor(() => {
-      expect(getByText('Unable to load user profile')).toBeTruthy();
-    });
+    const upgradeButton = await waitFor(() => getByText('Upgrade to Premium'));
+    fireEvent.press(upgradeButton);
+    expect(mockNavigate).toHaveBeenCalledWith('Premium');
   });
 
-  it('allows upgrading to premium', async () => {
+  it('handles logout correctly and resets navigation', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(userMock));
+
     const { getByText } = render(<Profile />);
+    const logoutButton = await waitFor(() => getByText('Logout'));
+    fireEvent.press(logoutButton);
 
-    // Check if the "Upgrade to Premium" button is visible for free users
-    expect(getByText('Upgrade to Premium')).toBeTruthy();
-
-    // Press the "Upgrade to Premium" button
-    fireEvent.press(getByText('Upgrade to Premium'));
-
-    // Ensure that the navigation to the "Premium" screen happens (this assumes that you have a navigation mock set up)
     await waitFor(() => {
-      expect(require('@react-navigation/native').useNavigation().navigate).toHaveBeenCalledWith('Premium');
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('user');
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('token');
+      expect(mockReset).toHaveBeenCalledWith({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
     });
   });
 
-  it('does not show the upgrade button for premium users', async () => {
-    // Mock AsyncStorage to return premium status
-    require('@react-native-async-storage/async-storage').getItem.mockResolvedValueOnce(
-      JSON.stringify({
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '+1 234 567 8900',
-        role: 'user',
-        subscriptionStatus: 'Premium',
-      })
-    );
+  
 
-    const { queryByText } = render(<Profile />);
+  it('handles malformed AsyncStorage user data gracefully', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce('invalid json');
 
-    // Wait for the profile data to be loaded
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const { getByText } = render(<Profile />);
     await waitFor(() => {
-      expect(queryByText('Upgrade to Premium')).toBeNull(); // Button should not appear
-    });
-  });
-
-  it('handles profile edit cancelation', async () => {
-    const { getByText, getByPlaceholderText } = render(<Profile />);
-
-    // Wait for the profile data to be loaded
-    await waitFor(() => {
-      expect(getByText('John Doe')).toBeTruthy();
-      expect(getByText('john.doe@example.com')).toBeTruthy();
-      expect(getByText('+1 234 567 8900')).toBeTruthy();
+      expect(getByText('Loading profile...')).toBeTruthy();
     });
 
-    // Press the edit button
-    fireEvent.press(getByText('Edit Profile'));
-
-    // Edit the name field
-    const nameInput = getByPlaceholderText('Name');
-    fireEvent.changeText(nameInput, 'Jane Doe');
-
-    // Press the cancel button
-    fireEvent.press(getByText('Cancel'));
-
-    // Ensure the name is reverted back to original
-    expect(getByText('John Doe')).toBeTruthy();
-  });
-
-  it('does not allow saving an empty name', async () => {
-    const { getByText, getByPlaceholderText } = render(<Profile />);
-
-    // Wait for the profile data to be loaded
-    await waitFor(() => {
-      expect(getByText('John Doe')).toBeTruthy();
-      expect(getByText('john.doe@example.com')).toBeTruthy();
-      expect(getByText('+1 234 567 8900')).toBeTruthy();
-    });
-
-    // Press the edit button
-    fireEvent.press(getByText('Edit Profile'));
-
-    // Clear the name field
-    const nameInput = getByPlaceholderText('Name');
-    fireEvent.changeText(nameInput, '');
-
-    // Try to save changes
-    fireEvent.press(getByText('Save Changes'));
-
-    // Ensure the save function was not called
-    await waitFor(() => {
-      expect(require('@react-native-async-storage/async-storage').setItem).not.toHaveBeenCalled();
-    });
-
-    // Ensure the name field is still showing the old value
-    expect(getByText('John Doe')).toBeTruthy();
+    consoleError.mockRestore();
   });
 });

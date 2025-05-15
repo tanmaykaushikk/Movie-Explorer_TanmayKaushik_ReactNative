@@ -29,13 +29,24 @@ type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList>;
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [errors, setErrors] = useState<any>({});
   
   
     const handleLogin = async () => {
-      if (!email || !password) {
-        alert("Please fill all fields");
-        return;
-      }
+     const formErrors: any = {};
+
+    if (!email) formErrors.email = "Email is required";
+    else if (!email.includes("@"))
+      formErrors.email = "Please enter a valid email address";
+
+    if (!password) formErrors.password = "Password is required";
+    else if (password.length < 8)
+      formErrors.password = "Password must be at least 8 characters";
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
   
       try {
         const user = await loginAPI({ email, password });
@@ -76,6 +87,7 @@ type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList>;
               value={email}
               onChangeText={setEmail}
             />
+                      {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             <View style={styles.passwordWrapper}>
               <TextInput
                 style={styles.input}
@@ -94,6 +106,9 @@ type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList>;
                 </Text>
               </TouchableOpacity>
             </View>
+            {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
           </View>
   
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -189,6 +204,11 @@ type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList>;
       color: "white",
       fontSize: wp(4),
     },
+     errorText: {
+    color: "red",
+    fontSize: wp(3.5),
+    marginBottom: hp(1),
+  },
   });
 
 function alert(arg0: string) {

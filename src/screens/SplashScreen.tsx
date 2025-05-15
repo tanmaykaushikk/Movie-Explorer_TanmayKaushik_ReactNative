@@ -32,7 +32,7 @@ import {
         catch(error){
           console.log("failed to clear the storage",error);
         }
-        navigation.navigate("HomePage");
+        navigation.replace("HomePage");
       };
   
     return (

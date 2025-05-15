@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import { useState, useEffect } from "react";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { deleteMovie } from "../utils/Api";
 import { getMoviesById } from "../utils/Api";
@@ -50,6 +51,12 @@ type NavigationParamList = {
 const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin,isPremiumSubscribed }) => {
   const navigation = useNavigation<NativeStackNavigationProp<NavigationParamList>>();
 
+  const [movieList , setMovieList] = useState<MovieItem[]>(data);
+
+  useEffect(()=>{
+    setMovieList(data);
+  },[data]);
+
   const handleDelete = (id: number) => {
     Alert.alert(
       "Confirm Deletion",
@@ -65,6 +72,7 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
             try {
               const response = await deleteMovie(id);
               if (response) {
+                setMovieList((prevList) => prevList.filter((movie) => movie.id !== id));
                 Alert.alert("Movie Deleted Successfully");
                 // Optionally, refresh the movie list here
               } else {
@@ -86,13 +94,13 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
     <View style={styles.container}>
       <View style={styles.title}>
         <Text style={styles.titleText}>{title}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SeeAll", { title, movies: data })}>
+        <TouchableOpacity onPress={() => navigation.navigate("SeeAll", { title, movies: movieList })}>
           <Text style={styles.seeAll}>See All</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: 10 }}>
-        {data.map((item) => (
+        {movieList.map((item) => (
           <TouchableWithoutFeedback
             key={item.id}
             onPress={async () => {
@@ -126,7 +134,7 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
               {isAdmin && (
                 <TouchableOpacity style={styles.edit} onPress={() => navigation.navigate("Update" , {movie:item})}
                   testID={`edit-icon-${item.id}`}>
-                  <Image accessibilityRole="image" source={require("../assets/Images/pen.png")} />
+                  <Image accessibilityRole="image" source={require("../assets/Images/pen.png")} style={styles.edit} />
                 </TouchableOpacity>
               )}
             </View>
@@ -177,11 +185,10 @@ const styles = StyleSheet.create({
   },
   edit: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    width: 16,
-    height: 16,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    top: 5,
+    right: 5,
+    width: 20,
+    height: 20,
     padding: 4,
     borderRadius: 12,
     zIndex: 1,

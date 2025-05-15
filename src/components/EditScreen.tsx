@@ -25,6 +25,7 @@ const EditScreen = () => {
   const route = useRoute();
   const { id } = (route.params || {}) as { id: number };
   const navigation = useNavigation();
+  const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
 
   const [form, setForm] = useState({
     title: "",
@@ -42,6 +43,13 @@ const EditScreen = () => {
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+
+    if (invalidFields.has(key)) {
+      setInvalidFields((prev) => {
+        const update = new Set(prev);
+        return update;
+      });
+    }
   };
 
   const pickImage = async () => {
@@ -79,6 +87,29 @@ const EditScreen = () => {
   };
 
   const handleAdd = async () => {
+    const requiredFields = [
+      "title",
+      "genre",
+      "release_year",
+      "director",
+      "duration",
+      "description",
+      "main_lead",
+      "streaming_platform",
+      "rating",
+    ];
+
+    const missingFields = requiredFields.filter((key) => !form[key].trim());
+
+    if (missingFields.length > 0) {
+      setInvalidFields(new Set(missingFields));
+      Alert.alert("Validation Error", "Please fill all required fields."); // 🔴 Show error
+      return;
+    }
+
+
+    setInvalidFields(new Set());
+
     try {
       const movieFormData = {
         title: form.title,
@@ -141,27 +172,30 @@ const EditScreen = () => {
             { key: "main_lead", placeholder: "Main Lead Actor" },
             { key: "streaming_platform", placeholder: "Streaming Platform" },
             { key: "rating", placeholder: "Rating (e.g., 8.5)", keyboardType: "decimal-pad" },
-          ].map((field) => (
-            <TextInput
-              key={field.key}
-              style={[styles.input, field.multiline && styles.multilineInput]}
-              placeholder={field.placeholder}
-              placeholderTextColor="silver"
-              value={form[field.key]}
-              onChangeText={(text) => handleChange(field.key, text)}
-              keyboardType={field.keyboardType || "default"}
-              multiline={field.multiline || false}
-              testID={`input-${field.key}`}
-            />
-          ))}
+          ].map((field) => {
+            const isInvalid = invalidFields.has(field.key);
+            return (
+              <TextInput
+                key={field.key}
+                style={[styles.input, field.multiline && styles.multilineInput, isInvalid && styles.invalidInput,]}
+                placeholder={field.placeholder}
+                placeholderTextColor="silver"
+                value={form[field.key]}
+                onChangeText={(text) => handleChange(field.key, text)}
+                keyboardType={field.keyboardType || "default"}
+                multiline={field.multiline || false}
+                testID={`input-${field.key}`}
+              />
+            );
+          })}
 
-          <TouchableOpacity onPress={pickImage} style={styles.imagePicker}  testID="image-picker-button">
+          <TouchableOpacity onPress={pickImage} style={styles.imagePicker} testID="image-picker-button">
             <Text style={styles.imagePickerText}>Pick Poster Image</Text>
             {form.posterPreview ? (
               <Image
                 source={{ uri: form.posterPreview }}
                 style={{ width: 100, height: 150, marginTop: 10 }}
-                  testID="poster-preview"
+                testID="poster-preview"
               />
             ) : null}
           </TouchableOpacity>
@@ -211,6 +245,9 @@ const styles = StyleSheet.create({
   multilineInput: {
     height: hp(12),
     textAlignVertical: "top",
+  },
+    invalidInput: {
+    borderColor: "red", 
   },
   imagePicker: {
     borderWidth: 1,

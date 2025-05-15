@@ -20,10 +20,6 @@ import {
       params: { movie },
     } = useRoute<any>();
   
-    // useEffect(() => {
-    //   // you can call API if needed with movie.id
-    // }, [movie]);
-  
     return (
       <View style={{ backgroundColor: "black", flex: 1 }}>
         <StatusBar testID="status-bar"/>

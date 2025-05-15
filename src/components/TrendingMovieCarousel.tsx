@@ -94,7 +94,8 @@ const MovieCard:React.FC<MovieCardProps> = ({ item, handleClick, isAdmin }) => {
           />
         )}
         {isAdmin && (
-          <Image style={styles.edit} source={require("../assets/Images/pen.png")} testID="edit-icon" />
+      
+            <Image style={styles.edit} source={require("../assets/Images/pen.png")} testID="edit-icon" />
         )}
       </View>
     </TouchableWithoutFeedback>
