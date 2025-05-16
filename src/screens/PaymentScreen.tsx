@@ -18,12 +18,6 @@ const Payment = () => {
   const { url, session } = route.params;
   const navigation = useNavigation();
   console.log(url);
-  
-
-  const [hasReachedSuccessUrl, setHasReachedSuccessUrl] = useState(false);
-  const [finalRedirectUrl, setFinalRedirectUrl] = useState<string | null>(null);
-
-  const successUrl = `http://localhost:5173/success?session_id=${session}`;
 
   const handleNavigationChange = async(navState:{url:string}) => {
     const currentUrl = navState.url;

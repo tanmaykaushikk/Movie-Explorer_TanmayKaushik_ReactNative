@@ -32,9 +32,15 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<any>({});
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
 
 
   const handleLogin = async () => {
+    if(isLoading) return;
+    setIsLoading(true);
+
+
     const formErrors: any = {};
 
     if (!email) formErrors.email = "Email is required";
@@ -47,6 +53,7 @@ const Login: React.FC = () => {
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+      setIsLoading(false);
       return;
     }
 
@@ -87,6 +94,8 @@ const Login: React.FC = () => {
     } catch (error) {
       Alert.alert("Invalid email or password");
       console.error("Login Error:", error);
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -236,7 +245,3 @@ const styles = StyleSheet.create({
     marginBottom: hp(1),
   },
 });
-
-function alert(arg0: string) {
-  throw new Error("Function not implemented.");
-}

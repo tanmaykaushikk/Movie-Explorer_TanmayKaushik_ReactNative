@@ -252,7 +252,8 @@ const HomePage = () => {
                 title={`Search Results for "${searchText}"`}
                 isAdmin={isAdmin}
                 data={searchResults}
-                handleClick={handleMovieClick} isPremiumSubscribed={false} />
+                handleClick={handleMovieClick} isPremiumSubscribed={false}
+                isGuest={isGuest} />
             ) : (
               <>
                 {/*Trending Movies Carousel */}
@@ -271,7 +272,8 @@ const HomePage = () => {
                   isAdmin={isAdmin}
                   data={upcoming}
                   handleClick={handleMovieClick}
-                  isPremiumSubscribed={isPremiumSubscribed} />
+                  isPremiumSubscribed={isPremiumSubscribed}
+                  isGuest={isGuest} />
 
                 {/* Top-Rated Movies */}
                 <MovieList
@@ -279,7 +281,8 @@ const HomePage = () => {
                   isAdmin={isAdmin}
                   data={topRated}
                   handleClick={handleMovieClick}
-                  isPremiumSubscribed={isPremiumSubscribed} />
+                  isPremiumSubscribed={isPremiumSubscribed}
+                  isGuest={isGuest} />
 
                 {/* For You */}
                 <MovieList
@@ -287,7 +290,9 @@ const HomePage = () => {
                   title="For You"
                   data={trending}
                   handleClick={handleMovieClick}
-                  isPremiumSubscribed={isPremiumSubscribed} />
+                  isPremiumSubscribed={isPremiumSubscribed}
+                  isGuest={isGuest}
+                />
 
                 {/* Genre-based lists */}
                 {Object.entries(genreMovies).map(([genre, movies]) => (
@@ -297,7 +302,8 @@ const HomePage = () => {
                     isAdmin={isAdmin}
                     data={movies}
                     handleClick={handleMovieClick}
-                    isPremiumSubscribed={isPremiumSubscribed} />
+                    isPremiumSubscribed={isPremiumSubscribed}
+                    isGuest={isGuest} />
                 ))}
               </>
             )}

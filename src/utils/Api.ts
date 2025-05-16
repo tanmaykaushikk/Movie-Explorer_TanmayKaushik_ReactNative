@@ -48,35 +48,6 @@ export const loginAPI = async (payload: {
   }
 };
 
-// export const signup = async (payload: {
-//   name: string;
-//   email: string;
-//   password: string;
-//   mobile_number: string;
-// }) => {
-//   const { name, email, password, mobile_number } = payload;
-
-//   try {
-//     const response = await axios.post(
-//       `${BASE_URL}/users`,
-//       { user: { name, email, password, mobile_number } },
-//       {
-//         headers: {
-//           "Content-Type": "application/json",
-//           Accept: "application/json",
-//         },
-//       }
-//     );
-
-//     const newUser = response.data;
-//     await AsyncStorage.setItem("user", JSON.stringify(newUser));
-//     return newUser;
-//   } catch (error: any) {
-//     console.error("Error Occurred while Signing Up:", error);
-//     const errorMessage = error.response?.data?.errors;
-//     console.log("ERROR MESSAGE: ", error.response?.data?.errors);
-//   }
-// };
 
 export const signup = async (payload: { first_name: string, email: string, password: string, mobile_number: string, last_name?: string }) => {
     const { first_name, email, password, mobile_number, last_name = "rana" } = payload;

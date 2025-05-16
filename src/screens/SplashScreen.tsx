@@ -20,7 +20,7 @@ import {
       useEffect(() => {
         setTimeout(() => {
           handleStart();
-        }, 1000);
+        }, 1500);
       }, [])
       
   

@@ -40,6 +40,7 @@ interface MovieListProps {
   handleClick: (item: MovieItem) => void;
   isAdmin: boolean;
   isPremiumSubscribed: boolean;
+  isGuest : boolean;
 }
 
 type NavigationParamList = {
@@ -48,7 +49,7 @@ type NavigationParamList = {
   Update: { movie: MovieItem }; 
 };
 
-const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin,isPremiumSubscribed }) => {
+const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin,isPremiumSubscribed,isGuest }) => {
   const navigation = useNavigation<NativeStackNavigationProp<NavigationParamList>>();
 
   const [movieList , setMovieList] = useState<MovieItem[]>(data);
@@ -90,11 +91,31 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
     );
   };
 
+  const handleSeeAll = () => {
+    console.log("isGuest in MovieList:", isGuest);
+  if (isGuest) {
+    Alert.alert(
+      "Login Required",
+      "Please login to view all movies.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Login",
+          onPress: () => navigation.navigate("Login"),
+        },
+      ]
+    );
+    return;
+  }
+
+  navigation.navigate("SeeAll", { title, movies: movieList, isGuest });
+};
+
   return (
     <View style={styles.container}>
       <View style={styles.title}>
         <Text style={styles.titleText}>{title}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SeeAll", { title, movies: movieList })}>
+        <TouchableOpacity onPress={handleSeeAll}>
           <Text style={styles.seeAll}>See All</Text>
         </TouchableOpacity>
       </View>
