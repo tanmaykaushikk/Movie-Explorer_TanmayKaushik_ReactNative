@@ -11,9 +11,11 @@ import {
 import React, { useState } from "react";
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from "@react-navigation/native";
-import { signup } from "../utils/Api";
+import { sendTokenToBackend, signup } from "../utils/Api";
 import { RootStackParamList } from "../types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const { width, height } = Dimensions.get("window");
 
@@ -21,6 +23,10 @@ const wp = (percent: number) => (width * percent) / 100;
 const hp = (percent: number) => (height * percent) / 100;
 
 type SignupNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+interface UserData {
+  token: string;
+}
 
 const Signup: React.FC = () => {
   const navigation = useNavigation<SignupNavigationProp>();
@@ -58,6 +64,13 @@ const Signup: React.FC = () => {
         password,
         mobile_number: phoneNumber,
       });
+
+      const userData = {
+        token: response.token,
+        ...response.user,
+      };
+      await AsyncStorage.setItem('new user detail', JSON.stringify(userData));
+
       Alert.alert("User created successfully!");
       navigation.navigate("LoginPage");
     } catch (error: any) {
@@ -213,4 +226,5 @@ const styles = StyleSheet.create({
     marginBottom: hp(1),
   },
 });
+
 

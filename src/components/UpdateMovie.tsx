@@ -69,6 +69,7 @@ const UpdateMovie = () => {
       release_year: parseInt(formState.release_year),
       rating: parseFloat(formState.rating),
       duration: parseInt(formState.duration),
+      poster: formState.poster_url
     };
 
     try {

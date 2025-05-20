@@ -39,6 +39,7 @@ interface MovieCardProps {
   item: MovieItem;
   handleClick: (item: MovieItem) => void;
   isAdmin: boolean;
+  isPremuimSubscribed: boolean
 }
 
 const { width, height } = Dimensions.get("window");
@@ -54,11 +55,12 @@ const TrendingMoviesCarousel: React.FC<TrendingMoviesCarouselProps> = ({
       <Carousel
         loop={true}
         autoPlay={true}
+        autoPlayInterval={2000}
         width={width * 0.9}
         height={height * 0.6}
         data={data}
         renderItem={({ item }) => (
-          <MovieCard item={item} handleClick={handleClick} isAdmin={isAdmin} />
+          <MovieCard item={item} handleClick={handleClick} isAdmin={isAdmin} isPremuimSubscribed={isPremiumSubscribed}/>
         )}
         style={{ justifyContent: "center", alignSelf: "center" }}
         mode="parallax"

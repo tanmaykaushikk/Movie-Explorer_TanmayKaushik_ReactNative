@@ -8,13 +8,14 @@ import {
   Dimensions,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from "@react-navigation/native";
-import { getSubscripstionStatus, loginAPI } from "../utils/Api";
+import { getSubscripstionStatus, loginAPI, sendTokenToBackend } from "../utils/Api";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import messaging from '@react-native-firebase/messaging';
 const { height, width } = Dimensions.get("window");
 
 
@@ -61,6 +62,8 @@ const Login: React.FC = () => {
       const user = await loginAPI({ email, password });
 
       const token = user?.token;
+      // console.log("tokennnnn" , token)
+      await AsyncStorage.setItem('userToken' , token)
       if (!token) throw new Error("Token not found in the login response");
 
       const subcriptionStatus = await getSubscripstionStatus(token);
@@ -85,6 +88,18 @@ const Login: React.FC = () => {
         Alert.alert("Login successful - Free user");
       }
       console.log("Navigaitng to homepage");
+
+      try {
+        const fcmToken = await messaging().getToken();
+        console.log(fcmToken)
+        await sendTokenToBackend(fcmToken , token);
+        console.log('FCM token successfully sent to backend');
+      } catch (tokenError) {
+        console.error('Failed to send FCM token to backend:', tokenError);
+        // Continue with signup flow even if token sending fails
+      }
+
+
       navigation.reset({
         index: 0,
         routes: [{ name: "HomePage" }],
@@ -98,6 +113,8 @@ const Login: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+
 
   return (
     <ImageBackground

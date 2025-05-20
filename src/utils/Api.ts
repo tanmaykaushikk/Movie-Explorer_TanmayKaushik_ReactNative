@@ -266,39 +266,35 @@ export const deleteMovie = async (id: number): Promise<boolean> => {
 };
 
 
-export const sendTokenToBackend = async (token: string): Promise<any> => {
+export const sendTokenToBackend = async (fcmToken: string , authToken:string): Promise<any> => {
+  console.log('sendtoken called')
   try {
-    const userData = AsyncStorage.getItem('new user detail');
-    if (!userData) {
+    console.log(authToken)
+    console.log(fcmToken)
+    if (!authToken) {
       throw new Error('No user data found. User might not be logged in.');
     }
 
-    const user: UserData = JSON.parse(userData);
-    const authToken = user?.token;
+    // const user: token = JSON.parse(token);
+    // const authToken = token
     if (!authToken) {
       throw new Error('No authentication token found in user data.');
     }
 
-    console.log('Sending FCM token to backend:', token);
+    console.log('Sending FCM token to backend:', fcmToken);
     console.log('Using auth token:', authToken);
 
-    const response = await fetch(`${BASE_URL}/api/v1/update_device_token`, {
+    const response = await fetch(`${BASE_URL}/api/v1/users/update_device_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
       },
-      body: JSON.stringify({ device_token: token }),
+      body: JSON.stringify({ device_token: fcmToken }),
     });
-
-    if (!response.ok) {
-      const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
-      throw new Error(`Failed to send device token: ${response.status} ${response.statusText} - ${errorData.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    console.log('Device token sent to backend successfully:', data);
-    return data;
+    console.log(response)
+    console.log('Device token sent to backend successfully:', response);
+    return response;
   } catch (error) {
     console.error('Error sending device token to backend:', error);
     throw error;

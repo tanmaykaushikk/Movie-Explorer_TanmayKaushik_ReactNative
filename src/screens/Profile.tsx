@@ -38,7 +38,7 @@ const Profile = () => {
         setUserData({
           name: user.name || 'User Name',
           email: user.email || 'user@example.com',
-          phone: user.phone || '+1 234 567 8900',
+          phone: user.phone || '+91 9876543210',
           role: user.role || 'user',
           premiumSubscribed: user.premiumSubscribed || false,
         });
