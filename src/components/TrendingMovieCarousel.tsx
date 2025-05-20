@@ -11,6 +11,7 @@ import React from "react";
 import Carousel from "react-native-reanimated-carousel";
 
 
+
 interface MovieItem {
 
   id: number;
@@ -45,7 +46,7 @@ interface MovieCardProps {
 const { width, height } = Dimensions.get("window");
 
 const TrendingMoviesCarousel: React.FC<TrendingMoviesCarouselProps> = ({
-  data, isAdmin, handleClick,isPremiumSubscribed
+  data, isAdmin, handleClick, isPremiumSubscribed
 }) => {
   console.log("dataaaaaaaaaaaaaaaaaaaaaaaaaaaa", data)
 
@@ -60,7 +61,7 @@ const TrendingMoviesCarousel: React.FC<TrendingMoviesCarouselProps> = ({
         height={height * 0.6}
         data={data}
         renderItem={({ item }) => (
-          <MovieCard item={item} handleClick={handleClick} isAdmin={isAdmin} isPremuimSubscribed={isPremiumSubscribed}/>
+          <MovieCard item={item} handleClick={handleClick} isAdmin={isAdmin} isPremuimSubscribed={isPremiumSubscribed} />
         )}
         style={{ justifyContent: "center", alignSelf: "center" }}
         mode="parallax"
@@ -73,7 +74,7 @@ const TrendingMoviesCarousel: React.FC<TrendingMoviesCarouselProps> = ({
   );
 };
 
-const MovieCard:React.FC<MovieCardProps> = ({ item, handleClick, isAdmin }) => {
+const MovieCard: React.FC<MovieCardProps> = ({ item, handleClick, isAdmin }) => {
   return (
     <TouchableWithoutFeedback onPress={() => handleClick(item)} testID={`card-${item.id}`}>
       <View style={styles.cardContainer}>
@@ -93,8 +94,8 @@ const MovieCard:React.FC<MovieCardProps> = ({ item, handleClick, isAdmin }) => {
           />
         )}
         {isAdmin && (
-      
-            <Image style={styles.edit} source={require("../assets/Images/pen.png")} testID="edit-icon" />
+
+          <Image style={styles.edit} source={require("../assets/Images/pen.png")} testID="edit-icon" />
         )}
       </View>
     </TouchableWithoutFeedback>

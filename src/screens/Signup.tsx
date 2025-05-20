@@ -37,9 +37,12 @@ const Signup: React.FC = () => {
   const [password, setPassword] = React.useState<string>("");
   const [phoneNumber, setPhoneNumber] = React.useState<string>("");
   const [errors, setErrors] = useState<any>({});
+    const [isLoading, setIsLoading] = useState<boolean>(false); 
 
 
   const handleSignup = async () => {
+     if (isLoading) return; 
+    setIsLoading(true); 
     let formErrors: any = {};
 
     if (!fullName) formErrors.fullName = "Full Name is required";
@@ -55,6 +58,7 @@ const Signup: React.FC = () => {
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+      setIsLoading(false); 
       return;
     }
 
@@ -90,6 +94,8 @@ const Signup: React.FC = () => {
           text2: error.message || "An unexpected error occurred",
         });
       }
+    }finally{
+      setIsLoading(false); 
     }
   };
 
@@ -146,8 +152,12 @@ const Signup: React.FC = () => {
           {errors.userExists && <Text style={styles.errorText}>{errors.userExists}</Text>}
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled]}  
+          onPress={handleSignup}
+          disabled={isLoading}   
+        >
+          <Text style={styles.buttonText}>{isLoading ? "Signing up..." : "Sign Up"}</Text> 
         </TouchableOpacity>
         <View style={styles.loginRedirect}>
           <Text style={styles.loginText}>
@@ -235,6 +245,9 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: wp(3.5),
     marginBottom: hp(1),
+  },
+    buttonDisabled: {
+    opacity: 0.6,     
   },
 });
 

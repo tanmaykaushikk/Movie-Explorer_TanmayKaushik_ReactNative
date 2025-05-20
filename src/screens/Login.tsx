@@ -17,6 +17,7 @@ import { RootStackParamList } from "../types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import messaging from '@react-native-firebase/messaging';
 import Toast from "react-native-toast-message";
+import LottieView from 'lottie-react-native';
 const { height, width } = Dimensions.get("window");
 
 
@@ -34,12 +35,12 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<any>({});
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
 
 
   const handleLogin = async () => {
-    if(isLoading) return;
+    if (isLoading) return;
     setIsLoading(true);
 
 
@@ -63,7 +64,7 @@ const Login: React.FC = () => {
       const user = await loginAPI({ email, password });
 
       const token = user?.token;
-      await AsyncStorage.setItem('userToken' , token)
+      await AsyncStorage.setItem('userToken', token)
       if (!token) throw new Error("Token not found in the login response");
 
       const subcriptionStatus = await getSubscripstionStatus(token);
@@ -82,21 +83,21 @@ const Login: React.FC = () => {
 
       if (user?.role === "supervisor") {
         // Alert.alert("Admin login successful");
-          Toast.show({
+        Toast.show({
           type: "success",
           text1: "Login Successful",
           text2: "Welcome Admin 👋",
         });
       } else if (subcriptionStatus.plan_type === "premium") {
         // Alert.alert("Login successful - premium user");
-         Toast.show({
+        Toast.show({
           type: "success",
           text1: "Login Successful",
           text2: "Enjoy your premium features ✨",
         });
       } else {
         // Alert.alert("Login successful - Free user");
-          Toast.show({
+        Toast.show({
           type: "success",
           text1: "Login Successful",
           text2: "Welcome to the app!",
@@ -107,7 +108,7 @@ const Login: React.FC = () => {
       try {
         const fcmToken = await messaging().getToken();
         console.log(fcmToken)
-        await sendTokenToBackend(fcmToken , token);
+        await sendTokenToBackend(fcmToken, token);
         console.log('FCM token successfully sent to backend');
       } catch (tokenError) {
         console.error('Failed to send FCM token to backend:', tokenError);
@@ -124,7 +125,7 @@ const Login: React.FC = () => {
     } catch (error) {
       Alert.alert("Invalid email or password");
       console.error("Login Error:", error);
-    }finally{
+    } finally {
       setIsLoading(false);
     }
   };
@@ -177,10 +178,16 @@ const Login: React.FC = () => {
             <Text style={styles.errorText}>{errors.password}</Text>
           )}
         </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Logging in..." : "Login"}
+          </Text>
         </TouchableOpacity>
+
         <View style={styles.signupRedirect}>
           <Text style={styles.signupRedirectText}>
             Don't have an account?{" "}
@@ -276,4 +283,8 @@ const styles = StyleSheet.create({
     fontSize: wp(3.5),
     marginBottom: hp(1),
   },
+  buttonDisabled: {
+  opacity: 0.6,
+}
+
 });

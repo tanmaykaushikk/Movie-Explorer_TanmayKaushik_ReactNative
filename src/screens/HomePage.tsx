@@ -21,6 +21,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAllMovies, getMoviesByGenre, getMoviesById, searchMovies } from "../utils/Api";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Toast from "react-native-toast-message";
+import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get("window");
 const wp = (percent: number) => (width * percent) / 100;
@@ -194,7 +195,12 @@ const HomePage = () => {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="silver" />
+        <LottieView
+          source={require("../assets/animation/loaderanimation.json")}
+          autoPlay
+          loop
+          style={styles.lottieLoader}
+        />
         <Text style={styles.loaderText}>Loading movies...</Text>
       </View>
     );
@@ -213,7 +219,7 @@ const HomePage = () => {
               onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
             >
               <Image
-                source={require("../assets/Images/user.png")}
+                source={require("../assets/Images/netflix.png")}
                 style={styles.userImage}
                 resizeMode="contain"
               />
@@ -415,6 +421,11 @@ const styles = StyleSheet.create({
     width: wp(8),
     height: hp(8),
   },
+  lottieLoader: {
+    width: wp(30),
+    height: wp(30),
+  },
+
 });
 
 

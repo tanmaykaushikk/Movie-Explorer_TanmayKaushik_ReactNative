@@ -23,7 +23,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
         android: {
             channelId: 'default',
             smallIcon: 'ic_launcher',
-             sound:'default', 
+             sound:'bell', 
             pressAction: {
                 id: 'default',
             },

@@ -46,7 +46,7 @@ const App = () => {
           channelId: 'default',
           smallIcon: 'ic_launcher', // your app icon in android/app/src/main/res/drawable
           color: '#FF0000',
-          sound:'default',
+          sound:'bell',
           pressAction: {
             id: 'default',
           },
