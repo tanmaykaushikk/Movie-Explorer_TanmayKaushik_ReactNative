@@ -20,6 +20,7 @@ import { DrawerActions, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAllMovies, getMoviesByGenre, getMoviesById, searchMovies } from "../utils/Api";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import Toast from "react-native-toast-message";
 
 const { width, height } = Dimensions.get("window");
 const wp = (percent: number) => (width * percent) / 100;
@@ -132,31 +133,45 @@ const HomePage = () => {
   const handleMovieClick = async (item: Movie) => {
     try {
       if (isGuest) {
-        Alert.alert(
-          "Login Required",
-          "Please login to view this movie.",
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Login",
-              onPress: () => navigation.navigate("Login"),
-            },
-          ]
-        );
+        // Alert.alert(
+        //   "Login Required",
+        //   "Please login to view this movie.",
+        //   [
+        //     { text: "Cancel", style: "cancel" },
+        //     {
+        //       text: "Login",
+        //       onPress: () => navigation.navigate("Login"),
+        //     },
+        //   ]
+        // );
+        Toast.show({
+          type: 'info',
+          text1: 'Login Required',
+          text2: 'Please login to view this movie.',
+          onPress: () => navigation.navigate("Login"),
+          autoHide: false,
+        });
         return;
       }
       if (item.premium && !isPremiumSubscribed && !isAdmin) {
-        Alert.alert(
-          "Premium Content",
-          "This movie requires a premium subscription. Would you like to subscribe?",
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Subscribe",
-              onPress: () => navigation.navigate("Premium"),
-            },
-          ]
-        );
+        // Alert.alert(
+        //   "Premium Content",
+        //   "This movie requires a premium subscription. Would you like to subscribe?",
+        //   [
+        //     { text: "Cancel", style: "cancel" },
+        //     {
+        //       text: "Subscribe",
+        //       onPress: () => navigation.navigate("Premium"),
+        //     },
+        //   ]
+        // );
+        Toast.show({
+          type: 'info',
+          text1: 'Premium Content',
+          text2: 'Subscribe to watch this movie.',
+          onPress: () => navigation.navigate("Premium"),
+          autoHide: false,
+        });
         return;
       }
 
@@ -167,7 +182,12 @@ const HomePage = () => {
         Alert.alert("Failed to fetch movie");
       }
     } catch (error) {
-      Alert.alert("Something went wrong in fetching movie");
+      // Alert.alert("Something went wrong in fetching movie");
+      Toast.show({
+        type: 'error',
+        text1: 'Oops!',
+        text2: 'Something went wrong while fetching movie details.',
+      });
     }
   };
 
@@ -183,7 +203,7 @@ const HomePage = () => {
   return (
     <View style={styles.container} testID="test">
       <LinearGradient
-        colors={["rgba(28, 28, 28, 0.94)", "rgb(0, 3, 6)"]}
+        colors={["rgb(28, 28, 28)", "rgb(0, 0, 0)"]}
         style={styles.gradient}
       >
         <SafeAreaView>
@@ -220,14 +240,21 @@ const HomePage = () => {
               <TouchableOpacity
                 onPress={() => {
                   if (isGuest) {
-                    Alert.alert(
-                      "Login Required",
-                      "Please login to manage subscriptions.",
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        { text: "Login", onPress: () => navigation.navigate("Login") },
-                      ]
-                    );
+                    // Alert.alert(
+                    //   "Login Required",
+                    //   "Please login to manage subscriptions.",
+                    //   [
+                    //     { text: "Cancel", style: "cancel" },
+                    //     { text: "Login", onPress: () => navigation.navigate("Login") },
+                    //   ]
+                    // );
+                    Toast.show({
+                      type: 'info',
+                      text1: 'Login Required',
+                      text2: 'Please login to manage subscriptions.',
+                      onPress: () => navigation.navigate("Login"),
+                      autoHide: false,
+                    });
                     return;
                   }
                   navigation.navigate("Premium");
@@ -235,7 +262,7 @@ const HomePage = () => {
 
               >
                 <Image
-                  source={require("../assets/Images/icons8-subscription-64.png")}
+                  source={require("../assets/Images/pay.png")}
                   style={styles.menuImage}
                   resizeMode="contain"
                 />
@@ -351,8 +378,8 @@ const styles = StyleSheet.create({
     color: "silver",
   },
   menuImage: {
-    width: wp(15),
-    height: hp(15),
+    width: wp(12),
+    height: hp(12),
     borderRadius: wp(10) / 2,
     marginRight: wp(8),
   },

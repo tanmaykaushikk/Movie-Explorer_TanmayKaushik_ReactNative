@@ -15,6 +15,7 @@ import { sendTokenToBackend, signup } from "../utils/Api";
 import { RootStackParamList } from "../types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
 
 
 const { width, height } = Dimensions.get("window");
@@ -71,13 +72,23 @@ const Signup: React.FC = () => {
       };
       await AsyncStorage.setItem('new user detail', JSON.stringify(userData));
 
-      Alert.alert("User created successfully!");
+      // Alert.alert("User created successfully!");
+        Toast.show({
+        type: "success",
+        text1: "Signup Successful",
+        text2: "Your account has been created 🎉",
+      });
       navigation.navigate("LoginPage");
     } catch (error: any) {
       if (error.message.includes("Email")) {
         setErrors({ email: error.message });
       } else {
-        Alert.alert(error.message || "Signup failed");
+        // Alert.alert(error.message || "Signup failed");
+        Toast.show({
+          type: "error",
+          text1: "Signup Failed",
+          text2: error.message || "An unexpected error occurred",
+        });
       }
     }
   };
@@ -89,7 +100,7 @@ const Signup: React.FC = () => {
       resizeMode="cover"
     >
       <LinearGradient
-        colors={["rgb(56,53,53)", "rgba(9,43,56,0.75)"]}
+    colors={["rgb(19, 18, 18)", "rgba(0, 5, 7, 0.83)"]}
         style={styles.gradient}
       >
         <View style={styles.signup}>

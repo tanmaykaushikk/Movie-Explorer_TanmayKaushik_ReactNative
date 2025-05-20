@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import messaging from '@react-native-firebase/messaging';
+import Toast from "react-native-toast-message";
 const { height, width } = Dimensions.get("window");
 
 
@@ -62,7 +63,6 @@ const Login: React.FC = () => {
       const user = await loginAPI({ email, password });
 
       const token = user?.token;
-      // console.log("tokennnnn" , token)
       await AsyncStorage.setItem('userToken' , token)
       if (!token) throw new Error("Token not found in the login response");
 
@@ -81,11 +81,26 @@ const Login: React.FC = () => {
       await AsyncStorage.setItem("user", JSON.stringify(userToStore));
 
       if (user?.role === "supervisor") {
-        Alert.alert("Admin login successful");
+        // Alert.alert("Admin login successful");
+          Toast.show({
+          type: "success",
+          text1: "Login Successful",
+          text2: "Welcome Admin 👋",
+        });
       } else if (subcriptionStatus.plan_type === "premium") {
-        Alert.alert("Login successful - premium user");
+        // Alert.alert("Login successful - premium user");
+         Toast.show({
+          type: "success",
+          text1: "Login Successful",
+          text2: "Enjoy your premium features ✨",
+        });
       } else {
-        Alert.alert("Login successful - Free user");
+        // Alert.alert("Login successful - Free user");
+          Toast.show({
+          type: "success",
+          text1: "Login Successful",
+          text2: "Welcome to the app!",
+        });
       }
       console.log("Navigaitng to homepage");
 
@@ -123,7 +138,7 @@ const Login: React.FC = () => {
       resizeMode="cover"
     >
       <LinearGradient
-        colors={["rgb(56, 53, 53)", "rgba(9, 43, 56, 0.75)"]}
+        colors={["rgb(19, 18, 18)", "rgba(0, 5, 7, 0.83)"]}
         style={styles.gradient}
       >
         <View style={styles.login}>
