@@ -17,7 +17,7 @@ const CustomDrawerContent :React.FC<DrawerContentComponentProps>= (props) => {
     const checkLogin = async () => {
       try {
         const userData = await AsyncStorage.getItem('user');
-        setIsLoggedIn(!!userData); // if user data exists, user is logged in
+        setIsLoggedIn(!!userData); 
       } catch (err) {
         console.log('Error checking login status', err);
       }

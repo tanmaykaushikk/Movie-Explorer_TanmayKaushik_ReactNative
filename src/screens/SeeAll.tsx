@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 const { height, width } = Dimensions.get("window");
 
 const SeeAll: React.FC<{ route: any }> = ({ route }) => {
-  const { title, movies,isGuest } = route.params || {};
+  const { title, movies, isGuest } = route.params || {};
   const navigation = useNavigation();
   const [currentPage, setCurrentPage] = useState(1);
   const moviesPerPage = 4; // 2x2 grid = 4 movies per page
@@ -34,12 +34,12 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
     return movies.slice(start, end);
   };
 
-   const handleMoviePress = (movie: any) => {
+  const handleMoviePress = (movie: any) => {
     if (isGuest && movie.premium) {
       Alert.alert("Login Required", "Please login and subscribe to view premium movies.");
       return;
     }
-    navigation.navigate("Movie", { movie ,isGuest});
+    navigation.navigate("Movie", { movie, isGuest });
   }
 
   const handleNextPage = () => {
@@ -61,7 +61,7 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
         <View style={styles.gridRow}>
           {currentMovies.length > 0 && (
             <TouchableWithoutFeedback
-              onPress={()=>{handleMoviePress(currentMovies[0])}}
+              onPress={() => { handleMoviePress(currentMovies[0]) }}
               testID="movie-0"
             >
               <View style={styles.movieCard}>
@@ -71,7 +71,7 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
           )}
           {currentMovies.length > 1 && (
             <TouchableWithoutFeedback
-             onPress={()=>{handleMoviePress(currentMovies[1])}}
+              onPress={() => { handleMoviePress(currentMovies[1]) }}
               testID="movie-1"
             >
               <View style={styles.movieCard}>
@@ -85,7 +85,7 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
         <View style={styles.gridRow}>
           {currentMovies.length > 2 && (
             <TouchableWithoutFeedback
-               onPress={()=>{handleMoviePress(currentMovies[2])}}
+              onPress={() => { handleMoviePress(currentMovies[2]) }}
               testID="movie-2"
             >
               <View style={styles.movieCard}>
@@ -95,7 +95,7 @@ const SeeAll: React.FC<{ route: any }> = ({ route }) => {
           )}
           {currentMovies.length > 3 && (
             <TouchableWithoutFeedback
-                 onPress={()=>{handleMoviePress(currentMovies[3])}}
+              onPress={() => { handleMoviePress(currentMovies[3]) }}
               testID="movie-3"
             >
               <View style={styles.movieCard}>
@@ -145,41 +145,47 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "white",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontSize: 26,
+    fontWeight: "800",
+    paddingTop: 70,
     textAlign: "center",
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
   },
   gridContainer: {
     flex: 1,
     justifyContent: "center",
+    paddingHorizontal: 10,
   },
   gridRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   movieCard: {
     backgroundColor: "#1e1e1e",
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: "hidden",
-    width: width * 0.43,
+    width: width * 0.42,
+    height: height * 0.27,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
   },
   movieImage: {
-    height: height * 0.26,
     width: "100%",
+    height: "100%",
     resizeMode: "cover",
+    borderRadius: 14,
   },
   paginationContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 20,
+    marginTop: 10,
+    paddingHorizontal: 10,
   },
   paginationButton: {
     backgroundColor: "#007bff",

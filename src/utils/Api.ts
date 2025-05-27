@@ -163,26 +163,26 @@ export const searchMovies = async (title: string): Promise<Movie[]> => {
       },
     });
     const movies: Movie[] = response.data.movies || [];
-    console.log(`Fetched movies for genre ${title}:`, movies);
+    console.log(`Fetched movies for title ${title}:`, movies);
     return movies;
   } catch (error: any) {
-    console.error(`Error fetching movies for genre ${title}:`, error.message);
+    // console.error(`Error fetching movies for title ${title}:`, error.message);
     return [];
   }
 };
 
 
 interface MovieFormData {
-  poster: any;
+  // poster: any;
   title: string;
   genre: string;
-  release_year: string;
+  release_year: number;
   director: string;
-  duration: string;
+  duration: number;
   description: string;
   main_lead: string;
   streaming_platform: string;
-  rating: string;
+  rating: number;
   isPremium: boolean;
   poster_url ?:  { uri: string; name: string; type: string } | null;
   banner_url ?:  { uri: string; name: string; type: string } | null;
@@ -301,53 +301,69 @@ export const sendTokenToBackend = async (fcmToken: string , authToken:string): P
   }
 };
 
-export const updateMovie = async (id: number, formData: MovieFormData): Promise<Boolean | null> => {
+
+export const updateMovie = async (
+  id: number,
+  formData: MovieFormData
+): Promise<Movie | null> => {
   try {
-    const token =  await AsyncStorage.getItem("token");
-    console.log("Retrieved token:", token);
+    const token = await AsyncStorage.getItem("token");
     if (!token) {
       Error("You need to sign in first.");
       throw new Error("No authentication token found");
     }
 
+    const releaseYearNum = Number(formData.release_year);
+    const durationNum = Number(formData.duration);
+    const ratingNum = Number(formData.rating);
+
+    if (isNaN(releaseYearNum)) {
+      Error("Release year must be a valid number.");
+      return null;
+    }
+
     const movieFormData = new FormData();
     movieFormData.append("movie[title]", formData.title);
     movieFormData.append("movie[genre]", formData.genre);
-    movieFormData.append("movie[release_year]", formData.release_year);
+    movieFormData.append("movie[release_year]", releaseYearNum.toString());
     movieFormData.append("movie[director]", formData.director);
-    movieFormData.append("movie[duration]", formData.duration);
+    movieFormData.append("movie[duration]", durationNum.toString());
     movieFormData.append("movie[description]", formData.description);
-    movieFormData.append("movie[main_lead]", formData.main_lead);
-    movieFormData.append("movie[streaming_platform]", formData.streaming_platform);
-    movieFormData.append("movie[rating]", formData.rating);
+    movieFormData.append("movie[rating]", ratingNum.toString());
     movieFormData.append("movie[premium]", String(formData.isPremium));
+
     if (formData.poster_url) {
       movieFormData.append("movie[poster]", formData.poster_url);
     }
+
     if (formData.banner_url) {
       movieFormData.append("movie[banner]", formData.banner_url);
     }
 
-    const response = await axios.patch(`${BASE_URL}/api/v1/movies/${id}`, movieFormData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-        Accept: "application/json",
-      },
-    });
+    const response = await axios.patch(
+      `${BASE_URL}/api/v1/movies/${id}`,
+      movieFormData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+          Accept: "application/json",
+        },
+      }
+    );
 
-    const movie: Movie = response.data.movie;
-    console.log("Movie updated successfully:", movie);
-    return true;
+    console.log("Response",response)
+
+    const movie: Movie = response?.data;
+    return movie;
   } catch (error: any) {
     console.error("Error updating movie:", error.message, error.response?.data);
-    const errorMessage = error.response?.data?.error || "Failed to update movie";
+    const errorMessage =
+      error.response?.data?.error || "Failed to update movie";
     Error(errorMessage);
     return null;
   }
 };
-
-
 
 export const createSubscription = async (
   planType: string,

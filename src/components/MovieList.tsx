@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { deleteMovie } from "../utils/Api";
 import { getMoviesById } from "../utils/Api";
+import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get("window");
 
@@ -40,23 +41,23 @@ interface MovieListProps {
   handleClick: (item: MovieItem) => void;
   isAdmin: boolean;
   isPremiumSubscribed: boolean;
-  isGuest : boolean;
+  isGuest: boolean;
 }
 
 type NavigationParamList = {
   SeeAll: { title: string; movies: MovieItem[] };
   Movie: { movie: MovieItem };
-  Update: { movie: MovieItem }; 
+  Update: { movie: MovieItem };
 };
 
-const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin,isPremiumSubscribed,isGuest }) => {
+const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin, isPremiumSubscribed, isGuest }) => {
   const navigation = useNavigation<NativeStackNavigationProp<NavigationParamList>>();
 
-  const [movieList , setMovieList] = useState<MovieItem[]>(data);
+  const [movieList, setMovieList] = useState<MovieItem[]>(data);
 
-  useEffect(()=>{
+  useEffect(() => {
     setMovieList(data);
-  },[data]);
+  }, [data]);
 
   const handleDelete = (id: number) => {
     Alert.alert(
@@ -74,14 +75,28 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
               const response = await deleteMovie(id);
               if (response) {
                 setMovieList((prevList) => prevList.filter((movie) => movie.id !== id));
-                Alert.alert("Movie Deleted Successfully");
+                // Alert.alert("Movie Deleted Successfully");
+                Toast.show({
+                  type: "success",
+                  text1: "Movie Deleted",
+                  text2: "The movie has been deleted successfully",
+                });
                 // Optionally, refresh the movie list here
               } else {
-                Alert.alert("Failed to delete movie");
+                // Alert.alert("Failed to delete movie");
+                Toast.show({
+                  type: "error",
+                  text1: "Failed to delete movie",
+                });
               }
             } catch (error) {
               console.error("Delete Movie Error:", error);
-              Alert.alert("An error occurred while deleting the movie.");
+              // Alert.alert("An error occurred while deleting the movie.");
+              Toast.show({
+                type: "error",
+                text1: "Error",
+                text2: "An error occurred while deleting the movie.",
+              });
             }
           },
           style: "destructive",
@@ -93,23 +108,29 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
 
   const handleSeeAll = () => {
     console.log("isGuest in MovieList:", isGuest);
-  if (isGuest) {
-    Alert.alert(
-      "Login Required",
-      "Please login to view all movies.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Login",
-          onPress: () => navigation.navigate("Login"),
-        },
-      ]
-    );
-    return;
-  }
+    if (isGuest) {
+      // Alert.alert(
+      //   "Login Required",
+      //   "Please login to view all movies.",
+      //   [
+      //     { text: "Cancel", style: "cancel" },
+      //     {
+      //       text: "Login",
+      //       onPress: () => navigation.navigate("Login"),
+      //     },
+      //   ]
+      // );
+      Toast.show({
+        type: "info",
+        text1: "Login Required",
+        text2: "Please login to view all movies.",
+      });
+      navigation.navigate("Login");
+      return;
+    }
 
-  navigation.navigate("SeeAll", { title, movies: movieList, isGuest });
-};
+    navigation.navigate("SeeAll", { title, movies: movieList, isGuest });
+  };
 
   return (
     <View style={styles.container}>
@@ -125,19 +146,29 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
           <TouchableWithoutFeedback
             key={item.id}
             onPress={async () => {
-              try{
+              try {
                 const updateMovie = await getMoviesById(item.id);
-                if(updateMovie){
+                if (updateMovie) {
                   handleClick(updateMovie);
-                }else{
-                  Alert.alert("Error. Could not fetch the movie")
+                } else {
+                  // Alert.alert("Error. Could not fetch the movie")
+                  Toast.show({
+                    type: "error",
+                    text1: "Error",
+                    text2: "Could not fetch the movie details.",
+                  });
                 }
-              }catch(error){
-                Alert.alert("Error. Something went wrong fetching movie")
+              } catch (error) {
+                // Alert.alert("Error. Something went wrong fetching movie")
+                    Toast.show({
+                  type: "error",
+                  text1: "Error",
+                  text2: "Something went wrong fetching the movie.",
+                });
               }
             }}
             onLongPress={() => isAdmin && handleDelete(item.id)}
-              testID={`movie-touchable-${item.id}`}
+            testID={`movie-touchable-${item.id}`}
           >
             <View style={styles.movieImageContainer}>
               <Image source={{ uri: item.poster_url }} testID="image" accessibilityRole="image" style={styles.movieImage} />
@@ -152,7 +183,7 @@ const MovieList: React.FC<MovieListProps> = ({ title, data, handleClick, isAdmin
               )}
 
               {isAdmin && (
-                <TouchableOpacity style={styles.edit} onPress={() => navigation.navigate("Update" , {movie:item})}
+                <TouchableOpacity style={styles.edit} onPress={() => navigation.navigate("Update", { movie: item })}
                   testID={`edit-icon-${item.id}`}>
                   <Image accessibilityRole="image" source={require("../assets/Images/pen.png")} style={styles.edit} />
                 </TouchableOpacity>
@@ -195,13 +226,14 @@ const styles = StyleSheet.create({
     height: width * 0.45,
     borderRadius: 10,
     overflow: "hidden",
-    backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
   },
   movieImage: {
-    width: 120,
-    height: 170,
+    width: "100%",
+    height: "100%",
+    borderRadius: 10,
+    resizeMode: "cover"
   },
   edit: {
     position: "absolute",

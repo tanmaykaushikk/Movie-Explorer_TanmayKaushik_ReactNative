@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   Text,
@@ -14,7 +14,8 @@ import {
 } from "react-native";
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import LinearGradient from "react-native-linear-gradient";
-import { updateMovie } from "../utils/Api";
+import { getMoviesById, updateMovie } from "../utils/Api";
+import Toast from "react-native-toast-message";
 
 const { height, width } = Dimensions.get("window");
 const wp = (percent: number) => (width * percent) / 100;
@@ -45,19 +46,55 @@ const UpdateMovie = () => {
   const navigation = useNavigation();
   const { movie } = route.params;
 
+  const [loading, setLoading] = useState(true);
   const [formState, setFormState] = useState({
-    title: movie.title,
-    genre: movie.genre,
-    release_year: movie.release_year.toString(),
-    rating: movie.rating.toString(),
-    director: movie.director,
-    duration: movie.duration.toString(),
-    description: movie.description,
-    main_lead: movie.main_lead,
-    streaming_platform: movie.streaming_platform,
-    isPremium: movie.premium,
-    poster_url: movie.poster_url,
+    title: "",
+    genre: "",
+    release_year: "",
+    rating: "",
+    director: "",
+    duration: "",
+    description: "",
+    main_lead: "",
+    streaming_platform: "",
+    isPremium: false,
+    poster_url: "",
   });
+
+
+
+  const fetchUpdateMovieData = async () => {
+    setLoading(true);
+    try {
+      const data = await getMoviesById(movie?.id);
+      setFormState({
+        title: data?.title || "",
+        genre: data?.genre || "",
+        release_year: data?.release_year !== undefined ? data?.release_year.toString() : "",
+        rating: data?.rating !== undefined ? data?.rating.toString() : "",
+        director: data?.director || "",
+        duration: data?.duration !== undefined ? data?.duration.toString() : "",
+        description: data?.description || "",
+        main_lead: data?.main_lead || "",
+        streaming_platform: data?.streaming_platform || "",
+        isPremium: !!data?.premium,
+        poster_url: data?.poster_url || "",
+      });
+    } catch (err: any) {
+      // Alert.alert("Error", "Failed to load movie data?");
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to load movie data',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUpdateMovieData();
+  }, []);
 
   const handleChange = (key: keyof typeof formState, value: string | boolean) => {
     setFormState({ ...formState, [key]: value });
@@ -69,22 +106,39 @@ const UpdateMovie = () => {
       release_year: parseInt(formState.release_year),
       rating: parseFloat(formState.rating),
       duration: parseInt(formState.duration),
-      poster: formState.poster_url
+      premium: formState.isPremium,
+      poster_url: formState.poster_url,
     };
 
     try {
       const result = await updateMovie(movie.id, payload);
+      console.log("result", result)
       if (result) {
-        Alert.alert("Success", "Movie updated successfully");
+        // Alert.alert("Success", "Movie updated successfully");
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Movie updated successfully',
+        });
         navigation.goBack();
       } else {
-        Alert.alert("Error", "Failed to update movie");
+        // Alert.alert("Error", "Failed to update movie");
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to update movie',
+        })
       }
     } catch (error) {
-      console.error("Update failed:", error);
-      Alert.alert("Error", "Something went wrong");
+      // Alert.alert("Error", "Something went wrong");
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Something went wrong',
+      });
     }
   };
+
 
   return (
     <ImageBackground

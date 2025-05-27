@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Keyboard,
   ActivityIndicator,
   Alert,
 } from "react-native";
@@ -22,6 +23,7 @@ import { getAllMovies, getMoviesByGenre, getMoviesById, searchMovies } from "../
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Toast from "react-native-toast-message";
 import LottieView from 'lottie-react-native';
+import Fuse from 'fuse.js';
 
 const { width, height } = Dimensions.get("window");
 const wp = (percent: number) => (width * percent) / 100;
@@ -67,9 +69,11 @@ const HomePage = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [isGuest, setIsGuest] = useState(false);
+  const [suggestions, setSuggestions] = useState<Movie[]>([]);
 
 
   const genres = ["action", "comedy", "horror", "romance", "sci-fi"];
+  const [fuse, setFuse] = useState<Fuse<Movie> | null>(null);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -94,10 +98,20 @@ const HomePage = () => {
         const allMovies: any = await getAllMovies();
         if (allMovies && Array.isArray(allMovies.movies)) {
           setMovies(allMovies.movies);
-          setTrending(allMovies.movies.slice(0, 5));
-          setUpcoming(allMovies.movies.slice(5, 10));
-          setTopRated(allMovies.movies.slice(0, 10));
-          setforYou(allMovies.movies.slice(0, 5));
+            setFuse(new Fuse(allMovies.movies, {
+            keys: ['title'],
+            threshold: 0.4
+          }));
+
+          const trendingMovies = allMovies.movies.filter((movie: { rating: number; }) => movie.rating >= 8);
+          setTrending(trendingMovies);
+          const upcomingMovies = allMovies.movies.slice(5, 10);
+          setUpcoming(upcomingMovies);
+          const topRatedPool = allMovies.movies.filter((movie: { rating: number; }) => movie.rating >= 8);
+          const randomTopRated = topRatedPool.sort(() => 0.5 - Math.random()).slice(0, 5);
+          setTopRated(randomTopRated);
+          const forYouMovies = [...allMovies.movies].sort(() => 0.5 - Math.random()).slice(0, 5);
+          setforYou(forYouMovies);
         }
 
         const genreResults: Record<string, Movie[]> = {};
@@ -122,15 +136,58 @@ const HomePage = () => {
     return unsubscribe;
   }, [navigation]);
 
-  const handleSearch = async (text: string) => {
+  useEffect(() => {
+    const delayedDebounce = setTimeout(async () => {
+      if (searchText.length >= 1) {
+        try {
+          const results = await searchMovies(searchText);
+          setSearchResults(results);
+          if (results.length === 0) {
+            Toast.show({
+              type: 'info',
+              text1: 'No Movies Found',
+              text2: `No results for "${searchText}"`,
+            });
+          }
+        } catch (error) {
+          console.error("Search error:", error);
+          setSearchResults([]);
+          Toast.show({
+            type: 'error',
+            text1: 'Search Failed',
+            text2: 'Could not fetch search results.',
+          });
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+    return () => clearTimeout(delayedDebounce);
+  }, [searchText]);
+
+  const handleSearch = (text: string) => {
     setSearchText(text);
-    if (text.length > 1) {
-      const results = await searchMovies(text);
-      setSearchResults(results);
-    } else {
-      setSearchResults([]);
+
+    if (text.length === 0) {
+      setSuggestions([]);
+      return;
     }
+
+      if (fuse) {
+      const matches = fuse.search(text);
+      const topMatches = matches.map((match) => match.item).slice(0, 5);
+      setSuggestions(topMatches);
+    }
+
+
+
+    // const filtered = movies.filter((movie) =>
+    //   movie.title.toLowerCase().includes(text.toLowerCase())
+    // );
+
+    // setSuggestions(filtered.slice(0, 5));
   };
+
   const handleMovieClick = async (item: Movie) => {
     try {
       if (isGuest) {
@@ -180,7 +237,12 @@ const HomePage = () => {
       if (movie) {
         navigation.navigate("Movie", { movie });
       } else {
-        Alert.alert("Failed to fetch movie");
+        // Alert.alert("Failed to fetch movie");
+        Toast.show({
+          type: 'info',
+          text1: 'Movie Not Found',
+          text2: 'Sorry, we could not find this movie.',
+        });
       }
     } catch (error) {
       // Alert.alert("Something went wrong in fetching movie");
@@ -196,12 +258,12 @@ const HomePage = () => {
     return (
       <View style={styles.loaderContainer}>
         <LottieView
-          source={require("../assets/animation/loaderanimation.json")}
+          source={require("../assets/animation/dots.json")}
           autoPlay
           loop
           style={styles.lottieLoader}
         />
-        <Text style={styles.loaderText}>Loading movies...</Text>
+        {/* <Text style={styles.loaderText}>Loading movies...</Text> */}
       </View>
     );
   }
@@ -219,7 +281,7 @@ const HomePage = () => {
               onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
             >
               <Image
-                source={require("../assets/Images/netflix.png")}
+                source={require("../assets/Images/applogo.png")}
                 style={styles.userImage}
                 resizeMode="contain"
               />
@@ -232,6 +294,21 @@ const HomePage = () => {
                 value={searchText}
                 onChangeText={handleSearch}
               />
+              <View style={styles.suggestionContainer}>
+                {suggestions.map((movie) => (
+                  <TouchableOpacity
+                    key={movie.id}
+                    onPress={() => {
+                      setSearchText(movie.title);
+                      setSuggestions([]);
+                    }}
+                    style={styles.suggestionItem}>
+                    <Text style={styles.suggestionText}>{movie.title}</Text>
+
+                  </TouchableOpacity>
+                ))}
+
+              </View>
             </View>
 
             {isAdmin ? (
@@ -268,7 +345,7 @@ const HomePage = () => {
 
               >
                 <Image
-                  source={require("../assets/Images/pay.png")}
+                  source={require("../assets/Images/dollar.png")}
                   style={styles.menuImage}
                   resizeMode="contain"
                 />
@@ -367,9 +444,10 @@ const styles = StyleSheet.create({
     height: hp(8),
   },
   userImage: {
-    width: wp(10),
-    height: hp(10),
+    width: wp(15),
+    height: hp(15),
     borderRadius: wp(10) / 2,
+    right: wp(3),
   },
   searchBar: {
     width: wp(60),
@@ -377,6 +455,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(15),
     borderWidth: 1,
     borderColor: "silver",
+    left: wp(-4),
   },
   searchInput: {
     flex: 1,
@@ -384,8 +463,8 @@ const styles = StyleSheet.create({
     color: "silver",
   },
   menuImage: {
-    width: wp(12),
-    height: hp(12),
+    width: wp(10),
+    height: hp(10),
     borderRadius: wp(10) / 2,
     marginRight: wp(8),
   },
@@ -425,7 +504,24 @@ const styles = StyleSheet.create({
     width: wp(30),
     height: wp(30),
   },
-
+suggestionContainer: {
+    position: "absolute",
+    top: hp(6),
+    width: "100%",
+    backgroundColor: "white",
+    zIndex: 1000,
+    borderRadius: 8,
+  },
+  suggestionItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomColor: "#555",
+    borderBottomWidth: 0.5,
+  },
+  suggestionText: {
+    color: "black",
+    fontSize: 14,
+  },
 });
 
 

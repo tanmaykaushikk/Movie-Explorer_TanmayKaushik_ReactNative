@@ -15,6 +15,7 @@ import LinearGradient from "react-native-linear-gradient";
 import { launchImageLibrary, ImageLibraryOptions, Asset } from "react-native-image-picker";
 import { createMovie } from "../utils/Api";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import Toast from "react-native-toast-message";
 
 const { height, width } = Dimensions.get("window");
 
@@ -64,7 +65,12 @@ const EditScreen = () => {
         console.log("User cancelled image picker");
       } else if (response.errorCode) {
         console.error("ImagePicker Error: ", response.errorMessage);
-        Alert.alert("Error picking image");
+        // Alert.alert("Error picking image");
+        Toast.show({
+          type: 'error',
+          text1: 'Image Picker Error',
+          text2: 'Something went wrong while picking image.',
+        });
       } else if (response.assets && response.assets.length > 0) {
         const image: Asset = response.assets[0];
         const fileUri = image.uri || "";
@@ -101,16 +107,21 @@ const EditScreen = () => {
 
     ];
 
-const missingFields = requiredFields.filter((key) => {
+    const missingFields = requiredFields.filter((key) => {
       if (key === "posterFile") {
-        return !form.posterFile; 
+        return !form.posterFile;
       }
       return !form[key].trim();
     });
 
     if (missingFields.length > 0) {
       setInvalidFields(new Set(missingFields));
-      Alert.alert("Validation Error", "Please fill all required fields.");
+      // Alert.alert("Validation Error", "Please fill all required fields.");
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please fill all required fields.',
+      });
       return;
     }
 
@@ -135,7 +146,12 @@ const missingFields = requiredFields.filter((key) => {
 
       const newMovie = await createMovie(movieFormData as any);
       if (newMovie) {
-        Alert.alert("Movie added successfully!");
+        // Alert.alert("Movie added successfully!");
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Movie added successfully!',
+        });
         setForm({
           title: "",
           genre: "",
@@ -152,7 +168,12 @@ const missingFields = requiredFields.filter((key) => {
       }
     } catch (error) {
       console.error("Add Movie Error:", error);
-      Alert.alert("Failed to add movie");
+      // Alert.alert("Failed to add movie");
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to add movie',
+      });
     }
   };
 
@@ -196,7 +217,7 @@ const missingFields = requiredFields.filter((key) => {
             );
           })}
 
-          <TouchableOpacity onPress={pickImage}  style={[styles.imagePicker, invalidFields.has("posterFile") && styles.invalidInput]} testID="image-picker-button">
+          <TouchableOpacity onPress={pickImage} style={[styles.imagePicker, invalidFields.has("posterFile") && styles.invalidInput]} testID="image-picker-button">
             <Text style={styles.imagePickerText}>Pick Poster Image</Text>
             {form.posterPreview ? (
               <Image
@@ -253,8 +274,8 @@ const styles = StyleSheet.create({
     height: hp(12),
     textAlignVertical: "top",
   },
-    invalidInput: {
-    borderColor: "red", 
+  invalidInput: {
+    borderColor: "red",
   },
   imagePicker: {
     borderWidth: 1,

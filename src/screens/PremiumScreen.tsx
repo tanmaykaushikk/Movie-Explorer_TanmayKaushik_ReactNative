@@ -5,10 +5,10 @@ import {
   Dimensions,
   ScrollView,
   TouchableOpacity,
-  ImageBackground
+  ImageBackground,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import LinearGradient from 'react-native-linear-gradient';
+import LinearGradient from "react-native-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSubscription } from "../utils/Api";
@@ -23,31 +23,37 @@ interface PlanOptionProps {
   price: string;
   features: string[];
   isPopular: boolean;
-  currentPlan: string | null; 
+  currentPlan: string | null;
+  duration?: string;
 }
 
-const PlanOption = ({ title, price, features, isPopular, currentPlan }: PlanOptionProps) => {
+const PlanOption = ({
+  title,
+  price,
+  features,
+  isPopular,
+  currentPlan,
+  duration,
+}: PlanOptionProps) => {
   const navigation = useNavigation();
-  const isCurrentPlan = currentPlan?.toLowerCase() === title.toLowerCase(); 
+  const isCurrentPlan = currentPlan?.toLowerCase() === title.toLowerCase();
 
   const handlePayment = async (title: string) => {
-    try{
-      const token = await AsyncStorage.getItem('token');
+    try {
+      const token = await AsyncStorage.getItem("token");
       const res = await createSubscription(title, token);
 
-    if(res?.url && res?.session_id){
-      await AsyncStorage.setItem("subscription",title);
-      navigation.navigate("Payment", {
-         url: res.url,
-        session: res.session_id
-      });
-    }
-    else{
-      console.warn("Invalid response from server" , res);
-    }
-  }
-    catch(error){
-      console.error("error in handle payment",error);
+      if (res?.url && res?.session_id) {
+        await AsyncStorage.setItem("subscription", title);
+        navigation.navigate("Payment", {
+          url: res.url,
+          session: res.session_id,
+        });
+      } else {
+        console.warn("Invalid response from server", res);
+      }
+    } catch (error) {
+      console.error("error in handle payment", error);
     }
   };
 
@@ -60,32 +66,39 @@ const PlanOption = ({ title, price, features, isPopular, currentPlan }: PlanOpti
       )}
 
       <LinearGradient
-        colors={isPopular ? ['#333', '#222', '#111'] : ['#222', '#1a1a1a', '#0d0d0d']}
+        colors={
+          isPopular
+            ? ["#1a1a1a", "#333333", "#1a1a1a"]
+            : ["#000000", "#111111", "#1a1a1a"]
+        }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.planBox, isPopular && styles.popularPlan]}
+        style={[
+          styles.planBox,
+          isPopular && styles.popularPlan,
+          isCurrentPlan && styles.selectedPlan,
+        ]}
       >
         <View style={styles.planHeader}>
-          <Text style={styles.planTitle}>{title}</Text>
-          <View style={styles.priceRow}>
-            <Text style={styles.currency}>$</Text>
-            <Text style={styles.price}>{price}</Text>
-            <Text style={styles.perMonth}>/month</Text>
-          </View>
+          <Text style={styles.planTitle}>{title.replace("_", " ").toUpperCase()}</Text>
+          {duration && (
+            <Text style={styles.durationText}>{duration}</Text>
+          )}
+          <Text style={styles.priceText}>{price}</Text>
         </View>
 
         <View style={styles.featuresContainer}>
           {features.map((feature, index) => (
             <View key={index} style={styles.featureRow}>
-              <Text style={styles.bulletPoint}>•</Text>
+              <Text style={styles.bulletPoint}>✓</Text>
               <Text style={styles.featureText}>{feature}</Text>
             </View>
           ))}
         </View>
 
         {isCurrentPlan ? (
-          <Text style={{ color: '#ccc', textAlign: 'center', marginTop: 10 }}>
-            You already have this plan
+          <Text style={styles.currentPlanText}>
+            You currently have this plan
           </Text>
         ) : (
           <TouchableOpacity
@@ -102,75 +115,103 @@ const PlanOption = ({ title, price, features, isPopular, currentPlan }: PlanOpti
 };
 
 const PremiumScreen = () => {
-  const [currentPlan, setCurrentPlan] = useState<string | null>(null); 
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSubscription = async () => {
-      const plan = await AsyncStorage.getItem("subscription"); 
+      const plan = await AsyncStorage.getItem("subscription");
       setCurrentPlan(plan);
     };
     fetchSubscription();
   }, []);
 
-  const basicFeatures = [
-    "Basic Features Access",
-    "Standard Quality",
-    "Ad-free Experience",
-    "Single Device Support"
-  ];
-
-  const premiumFeatures = [
-    "All Basic Features",
-    "Premium Quality",
-    "Multi-Device Support",
-    "Priority Customer Service",
-    "Exclusive Content Access"
+  const plans = [
+    {
+      title: "1_day",
+      price: "$1.99",
+      features: [
+        "Full access to all movies",
+        "Unlimited streaming",
+        "HD quality",
+        "No ads",
+      ],
+      duration: "24 hours of premium access",
+      isPopular: false,
+    },
+    {
+      title: "7_day",
+      price: "$7.99",
+      features: [
+        "Full access to all movies",
+        "Unlimited streaming",
+        "HD & 4K quality",
+        "No ads",
+        "Offline downloads",
+      ],
+      duration: "7 days of premium access",
+      isPopular: true,
+    },
+    {
+      title: "1_month",
+      price: "$19.99",
+      features: [
+        "Full access to all movies",
+        "Unlimited streaming",
+        "HD & 4K quality",
+        "No ads",
+        "Offline downloads",
+        "Priority customer support",
+        "Early access to new releases",
+      ],
+      duration: "30 days of premium access",
+      isPopular: false,
+    },
   ];
 
   return (
     <ImageBackground
       style={styles.container}
       source={require("../assets/Images/loginbackground.jpg")}
+      resizeMode="cover"
     >
       <LinearGradient
-        colors={["#333333", "#222222", "#111111", "#000000"]}
+        colors={[
+          "rgba(20,20,30,0.95)",
+          "rgba(20,20,30,0.8)",
+          "rgba(20,20,30,0.95)",
+        ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
         <View style={styles.headerContainer} testID="headerContainer">
-          <Text style={styles.premiumBadge} testID="premiumBadge">PREMIUM</Text>
-          <Text style={styles.headerText} testID="headerText">Upgrade Your Experience</Text>
-          <Text style={styles.subHeaderText} testID="subHeaderText">No commitment. Cancel anytime.</Text>
+          <Text style={styles.headerTitle}>
+            <Text style={styles.film}>FILM</Text>
+            <Text style={styles.hunt}>HUNT</Text>
+          </Text>
+          <Text style={styles.subHeaderText}>
+            Unlock premium content with a subscription that fits your schedule
+          </Text>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <PlanOption
-            title="1_day"
-            price="9.99"
-            features={basicFeatures}
-            isPopular={false}
-            currentPlan={currentPlan} 
-          />
-
-          <PlanOption
-            title="7_days"
-            price="19.99"
-            features={premiumFeatures}
-            isPopular={true}
-            currentPlan={currentPlan} 
-          />
-
-          <PlanOption
-            title="1_month"
-            price="19.99"
-            features={premiumFeatures}
-            isPopular={true}
-            currentPlan={currentPlan} 
-          />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {plans.map((plan) => (
+            <PlanOption
+              key={plan.title}
+              title={plan.title}
+              price={plan.price}
+              features={plan.features}
+              isPopular={plan.isPopular}
+              currentPlan={currentPlan}
+              duration={plan.duration}
+            />
+          ))}
 
           <View style={styles.guaranteeContainer}>
-            <Text style={styles.guaranteeText} testID="moneyBackGuarantee">✓ 30-day money back guarantee</Text>
+            <Text style={styles.guaranteeText}>✓ 30-day money back guarantee</Text>
           </View>
         </ScrollView>
       </LinearGradient>
@@ -180,182 +221,161 @@ const PremiumScreen = () => {
 
 export default PremiumScreen;
 
-
- const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    resizeMode: "cover",
   },
   gradient: {
     flex: 1,
     paddingHorizontal: wp(5),
-    paddingTop: hp(5),
+    paddingTop: hp(6),
   },
   headerContainer: {
     alignItems: "center",
-    marginTop: hp(4),
-    marginBottom: hp(3),
+    marginBottom: hp(4),
   },
-  premiumBadge: {
-    backgroundColor: '#333',
-    color: '#999',
-    fontSize: wp(3.5),
-    fontWeight: "bold",
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(0.5),
-    borderRadius: 15,
-    marginBottom: hp(1.5),
-    letterSpacing: 1,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden',
-  },
-  headerText: {
+  headerTitle: {
+    color: "#fff",
     fontSize: wp(7),
-    color: "white",
     fontWeight: "bold",
     marginBottom: hp(1),
-    textAlign: "center",
   },
   subHeaderText: {
-    color: "#999",
-    fontSize: wp(3.8),
+    color: "rgba(255,255,255,0.7)",
+    fontSize: wp(4),
     textAlign: "center",
-  },
-  scrollContent: {
-    paddingBottom: hp(10),
   },
   planContainer: {
     marginBottom: hp(3),
-    position: 'relative',
-    alignItems: 'center',
+    position: "relative",
   },
   popularBadge: {
-    position: 'absolute',
-    top: -hp(1.2),
-    paddingHorizontal: wp(3),
+    position: "absolute",
+    top: -hp(2),
+    right: wp(7),
+    backgroundColor: "#ff9800",
     paddingVertical: hp(0.5),
-    backgroundColor: '#444',
-    zIndex: 1,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: wp(3),
+    borderRadius: 20,
+    zIndex: 10,
+    shadowColor: "#ff9800",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
   },
   popularText: {
-    color: '#ccc',
-    fontSize: wp(3),
-    fontWeight: 'bold',
+    color: "#000",
+    fontWeight: "bold",
+    fontSize: wp(3.5),
     letterSpacing: 1,
   },
   planBox: {
-    width: wp(85),
-    borderRadius: 15,
+    borderRadius: 12,
     padding: wp(5),
-    backgroundColor: '#111',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  popularPlan: {
-    borderColor: 'rgba(255,255,255,0.2)',
-    shadowColor: "#111",
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
     elevation: 8,
   },
+  popularPlan: {
+    borderWidth: 2,
+    borderColor: "#ff9800",
+  },
+  selectedPlan: {
+    borderWidth: 2,
+    borderColor: "#ff0000",
+    shadowColor: "#ff0000",
+    shadowOpacity: 0.8,
+  },
   planHeader: {
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-    paddingBottom: hp(2),
     marginBottom: hp(2),
   },
   planTitle: {
-    fontSize: wp(5),
-    color: "white",
+    color: "#fff",
+    fontSize: wp(6),
     fontWeight: "bold",
+    marginBottom: hp(0.5),
+  },
+  durationText: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: wp(3.5),
     marginBottom: hp(1),
   },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
-  currency: {
-    color: '#aaa',
-    fontSize: wp(4.5),
-    fontWeight: '500',
-    marginBottom: hp(0.5),
-  },
-  price: {
-    fontSize: wp(8),
-    color: "white",
+  priceText: {
+    color: "#fff",
+    fontSize: wp(7),
     fontWeight: "bold",
   },
-  perMonth: {
-    color: '#aaa',
-    fontSize: wp(3.5),
-    marginBottom: hp(0.5),
-    marginLeft: wp(1),
-  },
   featuresContainer: {
-    marginVertical: hp(2),
+    marginBottom: hp(2),
   },
   featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: hp(1.5),
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: hp(0.8),
   },
   bulletPoint: {
-    color: '#666',
-    fontSize: wp(6),
+    color: "#ff9800",
+    fontWeight: "bold",
+    fontSize: wp(4),
     marginRight: wp(2),
-    lineHeight: wp(5),
   },
   featureText: {
-    color: '#ddd',
+    color: "#ccc",
     fontSize: wp(4),
   },
+  currentPlanText: {
+    color: "#ff4d4d",
+    fontWeight: "bold",
+    fontSize: wp(4),
+    textAlign: "center",
+    marginTop: hp(1),
+  },
   subscribeButton: {
-    backgroundColor: '#333',
+    backgroundColor: "#2196f3",
+    paddingVertical: hp(1.5),
     borderRadius: 10,
-    paddingVertical: hp(1.8),
-    alignItems: 'center',
-    marginTop: hp(2),
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    marginTop: hp(1),
+    shadowColor: "#2196f3",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
   },
   popularButton: {
-    backgroundColor: '#444',
-    borderColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: "#ff9800",
+    shadowColor: "#ff9800",
   },
   buttonText: {
-    color: "white",
-    fontSize: wp(4.2),
-    fontWeight: "600",
-    letterSpacing: 0.5,
+    color: "#fff",
+    fontSize: wp(4.5),
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  scrollContent: {
+    paddingBottom: hp(5),
   },
   guaranteeContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: hp(2),
+    marginTop: hp(3),
+    alignItems: "center",
   },
   guaranteeText: {
-    color: '#777',
-    fontSize: wp(3.5),
-    textAlign: 'center',
+    color: "#ff9800",
+    fontSize: wp(4),
+    fontWeight: "bold",
+  },
+  film: {
+    color: "red",
+    fontWeight: "bold",
+    fontSize: 40,
+  },
+  hunt: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 40,
   },
 });
+
 
 
 

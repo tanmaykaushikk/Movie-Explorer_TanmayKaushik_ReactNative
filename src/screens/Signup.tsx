@@ -37,7 +37,7 @@ const Signup: React.FC = () => {
   const [password, setPassword] = React.useState<string>("");
   const [phoneNumber, setPhoneNumber] = React.useState<string>("");
   const [errors, setErrors] = useState<any>({});
-    const [isLoading, setIsLoading] = useState<boolean>(false); 
+  const [isLoading, setIsLoading] = useState<boolean>(false); 
 
 
   const handleSignup = async () => {
